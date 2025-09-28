@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blob Designer</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #1a1a1a 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        #Glass {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .grid-color-palette {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .default-corner-input {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .default-corner-input input {
+            height: 38px;
+            padding: 0 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            width: 160px;
+        }
+
+        .default-corner-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .default-corner-input input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #4ecdc4;
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Style for the new glow effect button */
+        .glow-effect-btn {
+            background-color: #4ecdc4;
+            box-shadow: 0 0 8px rgba(78, 205, 196, 0.8), 0 0 12px rgba(78, 205, 196, 0.6);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+            border-color: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .color-btn.active {
+            border-color: white;
+            transform: scale(1.15);
+        }
+
+        .toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            align-items: center;
+        }
+
+        .toolbar button, .toolbar select {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .toolbar select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20127.9c3.6%203.6%207.8%205.4%2013%205.4s9.4-1.8%2013-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-13%200-5-1.9-9.4-5.4-13.2z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: .65em auto;
+            padding-right: 30px; /* Make space for arrow */
+        }
+        
+        .toolbar select option {
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .toolbar button:hover, .toolbar select:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        .toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .glass-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glass-controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .glass-controls input[type="range"] {
+            width: 80px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            -webkit-appearance: none;
+             appearance: none;
+             height: 5px;
+             border-radius: 5px;
+        }
+        .glass-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+        }
+        .glass-controls input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: none;
+        }
+        .glass-controls input[type="color"] {
+            width: 25px;
+            height: 25px;
+            padding: 2px;
+            border-radius: 5px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 100;
+        }
+
+        .grid-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            z-index: 150;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 15px;
+            width: 360px;
+            height: 360px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .grid-point {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            position: relative;
+        }
+
+        .grid-point:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: scale(1.1);
+        }
+
+        .grid-point.active {
+            background: #4ecdc4;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+            transform: scale(1.2);
+        }
+
+        .grid-point.active::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .grid-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .grid-controls button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+
+
+        .clear-grid-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .clear-grid-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .draw-mode-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4ecdc4;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .draw-mode-btn:hover {
+            background: #45b7d1;
+            transform: scale(1.05);
+        }
+
+        .editing-panel {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 200;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+        }
+
+        .editing-panel h3 {
+            margin: 0 0 15px 0;
+            color: white;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, 
+                #4ecdc4 0%, #4ecdc4 33%, 
+                #ff7f7f 33%, #ff7f7f 66%, 
+                #ff4444 66%, #ff4444 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: none;
+        }
+
+        .panel-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .panel-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .apply-btn {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .apply-btn:hover {
+            background: #45b7d1;
+        }
+
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .library-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 300;
+        }
+
+        .library-content {
+            background: #2a2a2a;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 80vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .library-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .library-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .library-item svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .library-item-colors {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .library-color-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .library-color-btn:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .library-color-btn.active {
+            border-color: white;
+            transform: scale(1.2);
+        }
+
+        .blob-shape {
+            cursor: pointer;
+        }
+
+        .blob-shape:hover {
+            stroke: white;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            animation: dash 1s linear infinite;
+        }
+
+        .blob-shape.selected {
+            stroke: #4ecdc4;
+            stroke-width: 3;
+            stroke-dasharray: 8,4;
+            animation: dash 1s linear infinite;
+        }
+
+        .selection-box {
+            fill: rgba(78, 205, 196, 0.1);
+            stroke: #4ecdc4;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            animation: dash 1s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        .glow-filter {
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+
+
+        @media (max-width: 768px) {
+            .color-palette {
+                top: 10px;
+                left: 10px;
+            }
+            
+            .color-btn {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .toolbar {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                align-items: flex-end;
+            }
+            
+            .toolbar button {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .instructions {
+                bottom: 10px;
+                left: 10px;
+                font-size: 12px;
+                max-width: 250px;
+            }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.21.0",
+    "marked": "https://aistudiocdn.com/marked@^16.3.0"
+  }
+}
+</script>
+</head>
+<body>
+    <svg id="Glass" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+            <!-- New filter for the glass effect background -->
+            <filter id="glassBlur" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur id="glassGaussianBlur" stdDeviation="6" />
+            </filter>
+            <!-- Master mask for all glass shapes -->
+            <mask id="glassMask">
+                <rect width="100%" height="100%" fill="black" />
+                <!-- White mask paths for glass shapes will be added here by JS -->
+            </mask>
+        </defs>
+
+        <!-- Group for NON-GLASS shapes that will be blurred -->
+        <g id="backgroundShapes"></g>
+
+        <!-- The blurred, masked, and color-overlaid copy of the background shapes -->
+        <g mask="url(#glassMask)">
+            <use href="#backgroundShapes" filter="url(#glassBlur)" />
+            <rect id="overlayRect" width="100%" height="100%" fill="#0000ff" opacity="0.2" style="mix-blend-mode: multiply; pointer-events: none;"/>
+        </g>
+        
+        <!-- Group for GLASS shapes, rendered on top of everything -->
+        <g id="glassShapes"></g>
+    </svg>
+
+    <div class="toolbar">
+        <button id="exportBtn">Export SVG</button>
+        <button id="snapLibraryBtn" style="display: none;">Snap Library</button>
+        <button id="libraryBtn">Shapes Library</button>
+        <button id="clearBtn1">Clear Canvas</button>
+        <div class="glass-controls">
+            <label>Blur: <input type="range" id="blurRange" min="0" max="30" value="6" step="1"></label>
+            <label>Overlay: <input type="color" id="overlayColor" value="#0000ff"></label>
+            <label>Intensity: <input type="range" id="overlayOpacity" min="0" max="100" value="20"></label>
+            <select id="blendModeSelect" title="Blend Mode">
+                <option value="multiply">Multiply</option>
+                <option value="screen">Screen</option>
+                <option value="overlay">Overlay</option>
+                <option value="darken">Darken</option>
+                <option value="lighten">Lighten</option>
+                <option value="color-dodge">Color Dodge</option>
+            </select>
+        </div>
+        <div class="default-corner-input">
+            <input type="number" id="defaultCornerInput" min="0" max="400" placeholder="Def Corner Smooth..">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>Blob Designer</strong><br>
+        • Click "Draw Mode" to open grid<br>
+        • Click points in sequence to draw<br>
+        • Click first point again to close shape<br>
+        • Drag shapes to move them<br>
+        • Long-press shapes to smooth corners
+    </div>
+
+    <button class="draw-mode-btn" onclick="blobDesigner.openGridWindow()">Draw Mode</button>
+
+    <div class="grid-window" id="gridWindow">
+        <h3 style="text-align: center; margin-top: 0; color: white;">Create Shape</h3>
+        <div class="grid-color-palette">
+            <div class="color-btn active" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
+            <div class="color-btn" style="background-color: rgba(0,0,0,0.2); border: 3px solid white;" data-color="rgba(0,0,0,0.2)" data-stroke="white" data-stroke-width="2"></div>
+            <div class="color-btn glow-effect-btn" data-color="#4ecdc4" data-filter="url(#glow)"></div>
+            <!-- New button for the glass effect -->
+            <div class="color-btn" style="background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4)); border: 2px solid white;" data-effect="glass"></div>
+            <div class="color-btn" style="background-color: #45b7d1;" data-color="#45b7d1"></div>
+            <div class="color-btn" style="background-color: #96ceb4;" data-color="#96ceb4"></div>
+            <div class="color-btn" style="background-color: #feca57;" data-color="#feca57"></div>
+            <div class="color-btn" style="background-color: #ff9ff3;" data-color="#ff9ff3"></div>
+        </div>
+        <div class="grid-container" id="gridContainer"></div>
+        <div class="grid-controls">
+            <label style="color: white; margin-right: 15px;">
+                <input type="checkbox" id="continuousDrawingMode" style="margin-right: 5px;">
+                Continuous Drawing
+            </label>
+            <button class="clear-grid-btn" onclick="blobDesigner.clearGrid()">Clear</button>
+            <button class="clear-grid-btn" onclick="blobDesigner.closeGridWindow()">Close</button>
+        </div>
+    </div>
+
+    <div class="library-modal" id="libraryModal">
+        <div class="library-content">
+            <button onclick="closeLibrary()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10;">×</button>
+            <h2>Shapes Library</h2>
+            <div class="library-grid" id="libraryGrid"></div>
+        </div>
+    </div>
+
+    <div class="library-modal" id="snapLibraryModal">
+        <div class="library-content">
+            <h2>Snap Library</h2>
+            <button onclick="closeSnapLibrary()" style="float: right; background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            <div class="library-grid" id="snapLibraryGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        class BlobDesigner {
+            constructor() {
+                this.canvas = document.getElementById('Glass');
+                this.backgroundShapesContainer = document.getElementById('backgroundShapes');
+                this.glassShapesContainer = document.getElementById('glassShapes');
+                this.glassMask = document.getElementById('glassMask');
+                this.shapes = [];
+                this.currentColor = '#ff6b6b';
+                this.isDragging = false;
+                this.selectedShape = null;
+                this.dragOffset = { x: 0, y: 0 };
+                this.longPressTimer = null;
+                this.editingPanel = null;
+                this.editingShapes = null;
+                this.originalCornerRadii = null;
+                this.gridPoints = [];
+                this.selectedGridPoints = [];
+                this.defaultCornerSmoothing = 0;
+                this.continuousDrawing = false;
+                this.isSelecting = false;
+                this.selectionStart = null;
+                this.selectedShapes = [];
+                this.selectionBox = null;
+                
+                this.currentStroke = undefined;
+                this.currentStrokeWidth = undefined;
+                this.currentFilter = undefined;
+                this.currentEffect = null;
+
+                // Glass effect elements
+                this.blurControl = document.getElementById('blurRange');
+                this.overlayColorControl = document.getElementById('overlayColor');
+                this.overlayOpacityControl = document.getElementById('overlayOpacity');
+                this.blendModeControl = document.getElementById('blendModeSelect');
+                this.glassGaussianBlur = document.getElementById('glassGaussianBlur');
+                this.overlayRect = document.getElementById('overlayRect');
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadLibrary();
+                this.checkSnapLibrary();
+            }
+
+            setupEventListeners() {
+                // Canvas events for shape manipulation only
+                this.canvas.addEventListener('mousedown', this.handleStart.bind(this));
+                this.canvas.addEventListener('mousemove', this.handleMove.bind(this));
+                this.canvas.addEventListener('mouseup', this.handleEnd.bind(this));
+                
+                // Touch events
+                this.canvas.addEventListener('touchstart', this.handleStart.bind(this));
+                this.canvas.addEventListener('touchmove', this.handleMove.bind(this));
+                this.canvas.addEventListener('touchend', this.handleEnd.bind(this));
+
+                // Toolbar buttons
+                document.getElementById('exportBtn').addEventListener('click', this.exportSVG.bind(this));
+                document.getElementById('snapLibraryBtn').addEventListener('click', this.openSnapLibrary.bind(this));
+                document.getElementById('libraryBtn').addEventListener('click', this.openLibrary.bind(this));
+                document.getElementById('clearBtn1').addEventListener('click', this.clearCanvas.bind(this));
+
+                // Glass effect controls
+                this.blurControl.addEventListener('input', (e) => {
+                    this.glassGaussianBlur.setAttribute('stdDeviation', e.target.value);
+                });
+
+                this.overlayColorControl.addEventListener('input', (e) => {
+                    this.overlayRect.setAttribute('fill', e.target.value);
+                });
+
+                this.overlayOpacityControl.addEventListener('input', (e) => {
+                    this.overlayRect.setAttribute('opacity', e.target.value / 100);
+                });
+
+                this.blendModeControl.addEventListener('input', (e) => {
+                    this.overlayRect.style.mixBlendMode = e.target.value;
+                });
+
+
+                // Default corner smoothing input
+                const defaultCornerInput = document.getElementById('defaultCornerInput');
+                defaultCornerInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (value === 0 || isNaN(value)) {
+                        e.target.value = '';
+                        this.defaultCornerSmoothing = 0;
+                    } else {
+                        this.defaultCornerSmoothing = value;
+                    }
+                });
+
+                // Prevent context menu
+                this.canvas.addEventListener('contextmenu', e => e.preventDefault());
+            }
+
+            getEventPos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            handleStart(e) {
+                e.preventDefault();
+                const pos = this.getEventPos(e);
+                const clickedShape = this.getShapeAtPoint(pos.x, pos.y);
+
+                if (clickedShape) {
+                    // Handle shape selection and dragging
+                    if (this.selectedShapes.includes(clickedShape)) {
+                        // If clicking on already selected shape, start dragging all selected
+                        this.isDragging = true;
+                        this.selectedShape = clickedShape;
+                        this.dragOffset = {
+                            x: pos.x - clickedShape.bounds.x,
+                            y: pos.y - clickedShape.bounds.y
+                        };
+                    } else {
+                        // Select single shape
+                        this.clearSelection();
+                        this.selectedShapes = [clickedShape];
+                        this.updateShapeSelection();
+                        this.selectedShape = clickedShape;
+                        this.isDragging = true;
+                        this.dragOffset = {
+                            x: pos.x - clickedShape.bounds.x,
+                            y: pos.y - clickedShape.bounds.y
+                        };
+                    }
+                    document.body.style.cursor = 'grabbing';
+
+                    // MODIFIED: Start long press timer for editing one or more shapes
+                    this.longPressTimer = setTimeout(() => {
+                        if (this.selectedShapes.length > 0) {
+                            this.openEditingPanel(this.selectedShapes, pos);
+                        }
+                    }, 500);
+                } else {
+                    // Start selection box on empty area
+                    this.clearSelection();
+                    this.isSelecting = true;
+                    this.selectionStart = pos;
+                    
+                    // Start long press timer for selection
+                    this.longPressTimer = setTimeout(() => {
+                        if (this.isSelecting) {
+                            this.startSelectionBox(pos);
+                        }
+                    }, 500);
+                }
+            }
+
+            handleMove(e) {
+                e.preventDefault();
+                const pos = this.getEventPos(e);
+
+                if (this.longPressTimer && (this.isDragging || this.isSelecting)) {
+                    const startPos = this.isDragging ? 
+                        { x: this.selectedShape.bounds.x + this.dragOffset.x, y: this.selectedShape.bounds.y + this.dragOffset.y } :
+                        this.selectionStart;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(pos.x - startPos.x, 2) + Math.pow(pos.y - startPos.y, 2)
+                    );
+                    if (distance > 10) {
+                        clearTimeout(this.longPressTimer);
+                        this.longPressTimer = null;
+                    }
+                }
+
+                if (this.isDragging && this.selectedShape) {
+                    // Move all selected shapes
+                    const deltaX = (pos.x - this.dragOffset.x) - this.selectedShape.bounds.x;
+                    const deltaY = (pos.y - this.dragOffset.y) - this.selectedShape.bounds.y;
+                    
+                    this.selectedShapes.forEach(shape => {
+                        this.moveShape(shape, shape.bounds.x + deltaX, shape.bounds.y + deltaY);
+                    });
+                } else if (this.selectionBox) {
+                    // Update selection box
+                    this.updateSelectionBox(pos);
+                } else {
+                    // Update cursor based on hover
+                    const hoveredShape = this.getShapeAtPoint(pos.x, pos.y);
+                    document.body.style.cursor = hoveredShape ? 'pointer' : 'default';
+                }
+            }
+
+            handleEnd(e) {
+                e.preventDefault();
+                
+                if (this.longPressTimer) {
+                    clearTimeout(this.longPressTimer);
+                    this.longPressTimer = null;
+                }
+
+                if (this.selectionBox) {
+                    this.finishSelection();
+                }
+
+                // Don't close editing panel when releasing the shape
+                this.isDragging = false;
+                this.selectedShape = null;
+                this.isSelecting = false;
+                this.selectionStart = null;
+                document.body.style.cursor = 'default';
+            }
+
+            getShapeAtPoint(x, y) {
+                for (let i = this.shapes.length - 1; i >= 0; i--) {
+                    const shape = this.shapes[i];
+                    if (this.isPointInShape(x, y, shape)) {
+                        return shape;
+                    }
+                }
+                return null;
+            }
+
+            isPointInShape(x, y, shape) {
+                // First do a quick bounds check
+                const bounds = shape.bounds;
+                if (x < bounds.x || x > bounds.x + bounds.width ||
+                    y < bounds.y || y > bounds.y + bounds.height) {
+                    return false;
+                }
+                
+                const pathElement = this.canvas.querySelector(`[data-shape-id="${shape.id}"]`);
+                if (pathElement) {
+                    const svgPoint = this.canvas.createSVGPoint();
+                    svgPoint.x = x;
+                    svgPoint.y = y;
+                    return pathElement.isPointInFill(svgPoint);
+                }
+                
+                return this.pointInPolygon(x, y, shape.points);
+            }
+
+            pointInPolygon(x, y, vertices) {
+                let inside = false;
+                for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+                    const xi = vertices[i].x, yi = vertices[i].y;
+                    const xj = vertices[j].x, yj = vertices[j].y;
+                    
+                    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                        inside = !inside;
+                    }
+                }
+                return inside;
+            }
+
+            openGridWindow() {
+                const gridWindow = document.getElementById('gridWindow');
+                const gridContainer = document.getElementById('gridContainer');
+
+                const gridColorPalette = gridWindow.querySelector('.grid-color-palette');
+                gridColorPalette.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        gridColorPalette.querySelector('.color-btn.active').classList.remove('active');
+                        btn.classList.add('active');
+                        
+                        // Reset all style properties before setting new ones
+                        this.currentEffect = null;
+                        this.currentFilter = null;
+                        this.currentStroke = null;
+                        this.currentStrokeWidth = null;
+
+                        if (btn.dataset.effect === 'glass') {
+                            this.currentEffect = 'glass';
+                            this.currentColor = 'rgba(255,255,255,0.22)';
+                            this.currentStroke = 'rgba(255,255,255,0.85)';
+                            this.currentStrokeWidth = '2';
+                        } else {
+                            this.currentColor = btn.dataset.color;
+                            this.currentStroke = btn.dataset.stroke;
+                            this.currentStrokeWidth = btn.dataset.strokeWidth;
+                            this.currentFilter = btn.dataset.filter;
+                        }
+                    });
+                });
+                
+                const continuousCheckbox = document.getElementById('continuousDrawingMode');
+                continuousCheckbox.addEventListener('change', (e) => {
+                    this.continuousDrawing = e.target.checked;
+                });
+                
+                gridContainer.innerHTML = '';
+                this.gridPoints = [];
+                this.selectedGridPoints = [];
+                
+                for (let row = 0; row < 6; row++) {
+                    for (let col = 0; col < 6; col++) {
+                        const point = document.createElement('div');
+                        point.className = 'grid-point';
+                        point.dataset.row = row;
+                        point.dataset.col = col;
+                        
+                        point.addEventListener('touchmove', (e) => {
+                            if (this.continuousDrawing && this.isDragging) {
+                                e.preventDefault();
+                                const touch = e.touches[0];
+                                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                                if (element && element.classList.contains('grid-point')) {
+                                    const touchRow = parseInt(element.dataset.row);
+                                    const touchCol = parseInt(element.dataset.col);
+                                    this.toggleGridPoint(touchRow, touchCol, element);
+                                }
+                            }
+                        });
+                        
+                        point.addEventListener('click', () => {
+                            if (!this.continuousDrawing) {
+                                this.toggleGridPoint(row, col, point);
+                            }
+                        });
+                        
+                        point.addEventListener('mousedown', () => {
+                            if (this.continuousDrawing) {
+                                this.isDragging = true;
+                                this.toggleGridPoint(row, col, point);
+                            }
+                        });
+                        
+                        point.addEventListener('mouseenter', () => {
+                            if (this.continuousDrawing && this.isDragging) {
+                                this.toggleGridPoint(row, col, point);
+                            }
+                        });
+                        
+                        gridContainer.appendChild(point);
+                        this.gridPoints.push({ row, col, element: point });
+                    }
+                }
+                
+                gridContainer.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                });
+                
+                gridContainer.addEventListener('mouseleave', () => {
+                    this.isDragging = false;
+                });
+                
+                gridWindow.style.display = 'block';
+            }
+
+            toggleGridPoint(row, col, element) {
+                if (this.selectedGridPoints.length >= 3 && 
+                    this.selectedGridPoints[0].row === row && 
+                    this.selectedGridPoints[0].col === col) {
+                    this.createShapeFromGrid();
+                    return;
+                }
+                
+                const pointIndex = this.selectedGridPoints.findIndex(p => p.row === row && p.col === col);
+                
+                if (this.continuousDrawing) {
+                    if (pointIndex < 0) {
+                        this.selectedGridPoints.push({ row, col });
+                        element.classList.add('active');
+                    }
+                } else {
+                    if (pointIndex >= 0) {
+                        this.selectedGridPoints.splice(pointIndex, 1);
+                        element.classList.remove('active');
+                    } else {
+                        this.selectedGridPoints.push({ row, col });
+                        element.classList.add('active');
+                    }
+                }
+                
+                this.updateGridConnections();
+                this.updatePreviewOutline();
+            }
+
+            updateGridConnections() {
+                this.gridPoints.forEach(point => {
+                    point.element.style.boxShadow = '';
+                });
+                
+                if (this.selectedGridPoints.length >= 3) {
+                    const firstPoint = this.selectedGridPoints[0];
+                    const firstGridPoint = this.gridPoints.find(gp => gp.row === firstPoint.row && gp.col === firstPoint.col);
+                    if (firstGridPoint) {
+                        firstGridPoint.element.style.boxShadow = '0 0 25px #4ecdc4, 0 0 35px #4ecdc4';
+                    }
+                }
+            }
+
+            updatePreviewOutline() {
+                const existingPreview = document.getElementById('gridPreview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                if (this.selectedGridPoints.length < 2) return;
+                
+                const gridContainer = document.getElementById('gridContainer');
+                
+                const preview = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                preview.id = 'gridPreview';
+                preview.style.position = 'absolute';
+                preview.style.top = '0';
+                preview.style.left = '0';
+                preview.style.width = '100%';
+                preview.style.height = '100%';
+                preview.style.pointerEvents = 'none';
+                preview.style.zIndex = '1';
+                
+                for (let i = 0; i < this.selectedGridPoints.length - 1; i++) {
+                    const currentPoint = this.selectedGridPoints[i];
+                    const nextPoint = this.selectedGridPoints[i + 1];
+                    
+                    const currentElement = this.gridPoints.find(gp => gp.row === currentPoint.row && gp.col === currentPoint.col).element;
+                    const nextElement = this.gridPoints.find(gp => gp.row === nextPoint.row && gp.col === nextPoint.col).element;
+                    
+                    const currentRect = currentElement.getBoundingClientRect();
+                    const nextRect = nextElement.getBoundingClientRect();
+                    const containerRect = gridContainer.getBoundingClientRect();
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', currentRect.left + currentRect.width / 2 - containerRect.left);
+                    line.setAttribute('y1', currentRect.top + currentRect.height / 2 - containerRect.top);
+                    line.setAttribute('x2', nextRect.left + nextRect.width / 2 - containerRect.left);
+                    line.setAttribute('y2', nextRect.top + nextRect.height / 2 - containerRect.top);
+                    line.setAttribute('stroke', this.currentColor);
+                    line.setAttribute('stroke-width', '3');
+                    line.setAttribute('opacity', '0.8');
+                    
+                    preview.appendChild(line);
+                }
+                
+                if (this.selectedGridPoints.length >= 3) {
+                    const lastPoint = this.selectedGridPoints[this.selectedGridPoints.length - 1];
+                    const firstPoint = this.selectedGridPoints[0];
+                    
+                    const lastElement = this.gridPoints.find(gp => gp.row === lastPoint.row && gp.col === lastPoint.col).element;
+                    const firstElement = this.gridPoints.find(gp => gp.row === firstPoint.row && gp.col === firstPoint.col).element;
+                    
+                    const lastRect = lastElement.getBoundingClientRect();
+                    const firstRect = firstElement.getBoundingClientRect();
+                    const containerRect = gridContainer.getBoundingClientRect();
+                    
+                    const closingLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    closingLine.setAttribute('x1', lastRect.left + lastRect.width / 2 - containerRect.left);
+                    closingLine.setAttribute('y1', lastRect.top + lastRect.height / 2 - containerRect.top);
+                    closingLine.setAttribute('x2', firstRect.left + firstRect.width / 2 - containerRect.left);
+                    closingLine.setAttribute('y2', firstRect.top + firstRect.height / 2 - containerRect.top);
+                    closingLine.setAttribute('stroke', this.currentColor);
+                    closingLine.setAttribute('stroke-width', '3');
+                    closingLine.setAttribute('stroke-dasharray', '8,4');
+                    closingLine.setAttribute('opacity', '0.6');
+                    
+                    preview.appendChild(closingLine);
+                }
+                
+                gridContainer.appendChild(preview);
+            }
+
+            createShapeFromGrid() {
+                if (this.selectedGridPoints.length < 3) return;
+                
+                const canvasPoints = this.selectedGridPoints.map(point => ({
+                    x: (point.col / 5) * 200 + 50,
+                    y: (point.row / 5) * 200 + 50
+                }));
+                
+                const shape = {
+                    id: Date.now(),
+                    points: canvasPoints,
+                    color: this.currentColor,
+                    bounds: this.calculateBounds(canvasPoints),
+                    cornerRadius: this.defaultCornerSmoothing,
+                    stroke: this.currentStroke,
+                    strokeWidth: this.currentStrokeWidth,
+                    filter: this.currentFilter,
+                    effect: this.currentEffect,
+                };
+                
+                this.shapes.push(shape);
+                this.renderShape(shape);
+                this.updateMagneticAttraction();
+                this.saveShapeToLibrary(shape);
+                this.closeGridWindow();
+            }
+
+            clearGrid() {
+                this.selectedGridPoints = [];
+                this.gridPoints.forEach(point => {
+                    point.element.classList.remove('active');
+                    point.element.style.boxShadow = '';
+                });
+                
+                const existingPreview = document.getElementById('gridPreview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+            }
+
+            closeGridWindow() {
+                document.getElementById('gridWindow').style.display = 'none';
+                this.clearGrid();
+            }
+
+            simplifyPath(points, tolerance) {
+                if (points.length <= 2) return points;
+                
+                const simplified = this.douglasPeucker(points, tolerance);
+                return simplified.length >= 3 ? simplified : points.slice(0, 3);
+            }
+
+            douglasPeucker(points, tolerance) {
+                if (points.length <= 2) return points;
+
+                let maxDistance = 0;
+                let maxIndex = 0;
+                const start = points[0];
+                const end = points[points.length - 1];
+
+                for (let i = 1; i < points.length - 1; i++) {
+                    const distance = this.perpendicularDistance(points[i], start, end);
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                        maxIndex = i;
+                    }
+                }
+
+                if (maxDistance > tolerance) {
+                    const left = this.douglasPeucker(points.slice(0, maxIndex + 1), tolerance);
+                    const right = this.douglasPeucker(points.slice(maxIndex), tolerance);
+                    return left.slice(0, -1).concat(right);
+                } else {
+                    return [start, end];
+                }
+            }
+
+            perpendicularDistance(point, lineStart, lineEnd) {
+                const dx = lineEnd.x - lineStart.x;
+                const dy = lineEnd.y - lineStart.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                if (length === 0) return Math.sqrt(Math.pow(point.x - lineStart.x, 2) + Math.pow(point.y - lineStart.y, 2));
+                
+                const t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / (length * length);
+                const projection = {
+                    x: lineStart.x + t * dx,
+                    y: lineStart.y + t * dy
+                };
+                
+                return Math.sqrt(Math.pow(point.x - projection.x, 2) + Math.pow(point.y - projection.y, 2));
+            }
+
+            createSVGPath(points, cornerRadius = 0) {
+                if (points.length < 2) return '';
+                
+                if (cornerRadius === 0) {
+                    let path = `M ${points[0].x} ${points[0].y}`;
+                    for (let i = 1; i < points.length; i++) {
+                        path += ` L ${points[i].x} ${points[i].y}`;
+                    }
+                    path += ' Z';
+                    return path;
+                }
+                
+                return this.createRoundedPath(points, cornerRadius);
+            }
+
+            createRoundedPath(points, radius) {
+                if (points.length < 3) return '';
+                
+                let path = '';
+                const smoothedPoints = [];
+                
+                for (let i = 0; i < points.length; i++) {
+                    const prev = points[(i - 1 + points.length) % points.length];
+                    const curr = points[i];
+                    const next = points[(i + 1) % points.length];
+                    
+                    const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
+                    const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+                    
+                    const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+                    const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+                    
+                    if (len1 > 0) {
+                        v1.x /= len1;
+                        v1.y /= len1;
+                    }
+                    if (len2 > 0) {
+                        v2.x /= len2;
+                        v2.y /= len2;
+                    }
+                    
+                    const actualRadius = Math.min(radius, len1 / 2, len2 / 2);
+                    
+                    const cp1 = {
+                        x: curr.x - v1.x * actualRadius,
+                        y: curr.y - v1.y * actualRadius
+                    };
+                    
+                    const cp2 = {
+                        x: curr.x + v2.x * actualRadius,
+                        y: curr.y + v2.y * actualRadius
+                    };
+                    
+                    smoothedPoints.push({ cp1, vertex: curr, cp2 });
+                }
+                
+                if (smoothedPoints.length > 0) {
+                    const first = smoothedPoints[0];
+                    path = `M ${first.cp1.x} ${first.cp1.y}`;
+                    
+                    for (let i = 0; i < smoothedPoints.length; i++) {
+                        const curr = smoothedPoints[i];
+                        const next = smoothedPoints[(i + 1) % smoothedPoints.length];
+                        
+                        path += ` Q ${curr.vertex.x} ${curr.vertex.y} ${curr.cp2.x} ${curr.cp2.y}`;
+                        path += ` L ${next.cp1.x} ${next.cp1.y}`;
+                    }
+                    
+                    path += ' Z';
+                }
+                
+                return path;
+            }
+
+            calculateBounds(points) {
+                if (points.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+                
+                let minX = points[0].x, maxX = points[0].x;
+                let minY = points[0].y, maxY = points[0].y;
+                
+                points.forEach(point => {
+                    minX = Math.min(minX, point.x);
+                    maxX = Math.max(maxX, point.x);
+                    minY = Math.min(minY, point.y);
+                    maxY = Math.max(maxY, point.y);
+                });
+                
+                return {
+                    x: minX,
+                    y: minY,
+                    width: maxX - minX,
+                    height: maxY - minY
+                };
+            }
+
+            renderShape(shape) {
+                const existing = this.canvas.querySelector(`[data-shape-id="${shape.id}"]`);
+                if (existing) existing.remove();
+                
+                const existingMask = this.glassMask.querySelector(`[data-mask-for="${shape.id}"]`);
+                if(existingMask) existingMask.remove();
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.classList.add('blob-shape');
+                path.setAttribute('d', this.createSVGPath(shape.points, shape.cornerRadius || 0));
+                path.setAttribute('fill', shape.color);
+                path.setAttribute('data-shape-id', shape.id);
+                
+                if (shape.stroke) {
+                    path.setAttribute('stroke', shape.stroke);
+                    path.setAttribute('stroke-width', shape.strokeWidth || 2);
+                }
+                
+                if (shape.filter) {
+                    path.setAttribute('filter', shape.filter);
+                }
+                
+                if (shape.effect === 'glass') {
+                    // The visible "glass" shape goes in the top layer
+                    this.glassShapesContainer.appendChild(path);
+
+                    // A white shape goes into the mask
+                    const maskPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    maskPath.setAttribute('d', this.createSVGPath(shape.points, shape.cornerRadius || 0));
+                    maskPath.setAttribute('fill', 'white');
+                    maskPath.setAttribute('data-mask-for', shape.id);
+                    this.glassMask.appendChild(maskPath);
+                } else {
+                    // Regular shapes go in the background layer to be blurred
+                    this.backgroundShapesContainer.appendChild(path);
+                }
+            }
+            
+            updateShapePath(shape) {
+                const newPathData = this.createSVGPath(shape.points, shape.cornerRadius || 0);
+                const mainPath = this.canvas.querySelector(`[data-shape-id="${shape.id}"]`);
+                if (mainPath) {
+                    mainPath.setAttribute('d', newPathData);
+                }
+                if (shape.effect === 'glass') {
+                    const maskPath = this.glassMask.querySelector(`[data-mask-for="${shape.id}"]`);
+                    if (maskPath) {
+                        maskPath.setAttribute('d', newPathData);
+                    }
+                }
+            }
+
+
+            moveShape(shape, newX, newY) {
+                const deltaX = newX - shape.bounds.x;
+                const deltaY = newY - shape.bounds.y;
+                
+                shape.points = shape.points.map(point => ({
+                    x: point.x + deltaX,
+                    y: point.y + deltaY
+                }));
+
+                if (shape.originalPoints) {
+                    shape.originalPoints = shape.originalPoints.map(point => ({
+                        x: point.x + deltaX,
+                        y: point.y + deltaY
+                    }));
+                }
+                
+                shape.bounds = this.calculateBounds(shape.points);
+                
+                if (this.editingPanel && this.editingShapes && shape === this.editingShapes[0] && this.editingShapeOriginalPosition) {
+                    const moveDistance = Math.sqrt(
+                        Math.pow(newX - this.editingShapeOriginalPosition.x, 2) +
+                        Math.pow(newY - this.editingShapeOriginalPosition.y, 2)
+                    );
+                    
+                    if (moveDistance >= 30) {
+                        this.closeEditingPanel();
+                    }
+                }
+                
+                this.updateShapePath(shape);
+                this.updateMagneticAttraction();
+            }
+
+            updateMagneticAttraction() {
+                const maxDistance = 150;
+                const maxAttraction = 45;
+                const smoothingFactor = 0.15;
+
+                this.shapes.forEach(shape => {
+                    if (!shape.originalPoints) {
+                        shape.originalPoints = shape.points.map(p => ({...p}));
+                    }
+                    if (!shape.attractionTargets) {
+                        shape.attractionTargets = shape.points.map(() => ({ x: 0, y: 0, strength: 0 }));
+                    }
+                });
+
+                for (let i = 0; i < this.shapes.length; i++) {
+                    const shape1 = this.shapes[i];
+                    
+                    for (let pointIndex = 0; pointIndex < shape1.originalPoints.length; pointIndex++) {
+                        const point1 = shape1.originalPoints[pointIndex];
+                        let bestAttraction = { x: 0, y: 0, strength: 0 };
+
+                        for (let j = 0; j < this.shapes.length; j++) {
+                            if (i === j) continue;
+                            
+                            const shape2 = this.shapes[j];
+                            
+                            shape2.originalPoints.forEach(point2 => {
+                                const distance = Math.sqrt(
+                                    Math.pow(point1.x - point2.x, 2) + 
+                                    Math.pow(point1.y - point2.y, 2)
+                                );
+                                
+                                if (distance < maxDistance && distance > 0) {
+                                    const strength = Math.pow(1 - (distance / maxDistance), 2);
+                                    const attraction = strength * maxAttraction;
+
+                                    const dx = point2.x - point1.x;
+                                    const dy = point2.y - point1.y;
+                                    const length = Math.sqrt(dx * dx + dy * dy);
+
+                                    const weight = strength;
+                                    bestAttraction.x += (dx / length) * attraction * weight;
+                                    bestAttraction.y += (dy / length) * attraction * weight;
+                                    bestAttraction.strength += weight;
+                                }
+                            });
+                        }
+
+                        if (bestAttraction.strength > 0) {
+                            bestAttraction.x /= bestAttraction.strength;
+                            bestAttraction.y /= bestAttraction.strength;
+                        }
+
+                        const currentTarget = shape1.attractionTargets[pointIndex];
+                        currentTarget.x = currentTarget.x * (1 - smoothingFactor) + bestAttraction.x * smoothingFactor;
+                        currentTarget.y = currentTarget.y * (1 - smoothingFactor) + bestAttraction.y * smoothingFactor;
+                        currentTarget.strength = currentTarget.strength * (1 - smoothingFactor) + bestAttraction.strength * smoothingFactor;
+
+                        shape1.points[pointIndex] = {
+                            x: point1.x + currentTarget.x,
+                            y: point1.y + currentTarget.y
+                        };
+                    }
+                }
+
+                this.shapes.forEach(shape => {
+                    shape.bounds = this.calculateBounds(shape.points);
+                    this.updateShapePath(shape);
+                });
+            }
+
+            openEditingPanel(shapes, pos) {
+                if (!shapes || shapes.length === 0) return;
+                this.closeEditingPanel();
+                
+                const firstShape = shapes[0];
+                this.originalCornerRadii = shapes.map(s => s.cornerRadius || 0);
+                this.editingShapeOriginalPosition = { x: firstShape.bounds.x, y: firstShape.bounds.y };
+                
+                const panel = document.createElement('div');
+                panel.className = 'editing-panel';
+                panel.style.left = Math.min(pos.x + 20, window.innerWidth - 320) + 'px';
+                panel.style.top = Math.min(pos.y + 20, window.innerHeight - 200) + 'px';
+                
+                const initialRadius = firstShape.cornerRadius || 0;
+
+                panel.innerHTML = `
+                    <h3>Edit Shape${shapes.length > 1 ? 's' : ''} (${shapes.length})</h3>
+                    <div class="slider-container">
+                        <label>Corner Smoothing: <span id="cornerValue">${Math.round(initialRadius)}</span>px</label>
+                        <input type="range" class="slider" id="cornerSlider" 
+                               min="0" max="100" value="${this.convertValueToSlider(initialRadius)}" step="1">
+                    </div>
+                `;
+                
+                document.body.appendChild(panel);
+                this.editingPanel = panel;
+                this.editingShapes = shapes;
+
+                setTimeout(() => {
+                    document.addEventListener('mousedown', this.handleOutsidePress.bind(this));
+                    document.addEventListener('touchstart', this.handleOutsidePress.bind(this));
+                }, 100);
+                
+                const slider = panel.querySelector('#cornerSlider');
+                const cornerValue = panel.querySelector('#cornerValue');
+                
+                slider.addEventListener('input', (e) => {
+                    const sliderValue = parseInt(e.target.value);
+                    const newRadius = this.convertSliderToValue(sliderValue);
+                    cornerValue.textContent = Math.round(newRadius);
+                    this.previewCornerSmoothing(this.editingShapes, newRadius);
+                });
+
+                slider.addEventListener('mouseup', () => {
+                    this.applyEdit();
+                });
+                
+                slider.addEventListener('touchend', () => {
+                    this.applyEdit();
+                });
+            }
+
+            previewCornerSmoothing(shapes, radius) {
+                const shapeArray = Array.isArray(shapes) ? shapes : [shapes];
+                shapeArray.forEach(shape => {
+                    shape.cornerRadius = radius;
+                    this.updateShapePath(shape);
+                });
+            }
+
+            applyEdit() {
+                if (this.editingShapes) {
+                    this.editingShapes.forEach(shape => this.saveShapeToLibrary(shape));
+                }
+                this.closeEditingPanel();
+            }
+
+            cancelEdit() {
+                if (this.editingShapes && this.originalCornerRadii) {
+                    this.editingShapes.forEach((shape, index) => {
+                        const originalRadius = this.originalCornerRadii[index];
+                        shape.cornerRadius = originalRadius;
+                        this.updateShapePath(shape);
+                    });
+                }
+                this.closeEditingPanel();
+            }
+
+            handleOutsidePress(e) {
+                if (this.editingPanel && !this.editingPanel.contains(e.target)) {
+                    this.applyEdit();
+                }
+            }
+
+            convertSliderToValue(sliderValue) {
+                if (sliderValue <= 33) {
+                    return (sliderValue / 33) * 40;
+                }
+                else if (sliderValue <= 66) {
+                    return 40 + ((sliderValue - 33) / 33) * 20;
+                }
+                else {
+                    return 60 + ((sliderValue - 66) / 34) * 340;
+                }
+            }
+
+            convertValueToSlider(value) {
+                if (value <= 40) {
+                    return (value / 40) * 33;
+                }
+                else if (value <= 60) {
+                    return 33 + ((value - 40) / 20) * 33;
+                }
+                else {
+                    return 66 + ((value - 60) / 340) * 34;
+                }
+            }
+
+            closeEditingPanel() {
+                if (this.editingPanel) {
+                    document.removeEventListener('mousedown', this.handleOutsidePress.bind(this));
+                    document.removeEventListener('touchstart', this.handleOutsidePress.bind(this));
+                    this.editingPanel.remove();
+                    this.editingPanel = null;
+                    this.editingShapes = null;
+                    this.editingShapeOriginalPosition = null;
+                    this.originalCornerRadii = null;
+                }
+            }
+
+            exportSVG() {
+                const bounds = this.canvas.getBoundingClientRect();
+                const width = bounds.width;
+                const height = bounds.height;
+
+                // 1. Create the root SVG element
+                const exportSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                exportSVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                exportSVG.setAttribute('width', width);
+                exportSVG.setAttribute('height', height);
+                exportSVG.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+                // 2. Create and populate the <defs> block
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                
+                // Copy filters
+                this.canvas.querySelectorAll('defs > filter').forEach(filter => {
+                    defs.appendChild(filter.cloneNode(true));
+                });
+                
+                // Create background gradient
+                const radialGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+                radialGradient.id = 'exported-bg-gradient';
+                radialGradient.innerHTML = `<stop offset="0%" stop-color="#2a2a2a" /><stop offset="100%" stop-color="#1a1a1a" />`;
+                defs.appendChild(radialGradient);
+
+                // 3. Create a main group for all visual elements, similar to the example
+                const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                mainGroup.id = 'blob-design-group';
+
+                // 4. Create and add the background rectangle
+                const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                backgroundRect.setAttribute('width', '100%');
+                backgroundRect.setAttribute('height', '100%');
+                backgroundRect.setAttribute('fill', 'url(#exported-bg-gradient)');
+                mainGroup.appendChild(backgroundRect);
+
+                // 5. Get shape data
+                const liveBackgroundShapes = this.backgroundShapesContainer.querySelectorAll('path');
+                const liveGlassShapes = this.glassShapesContainer.querySelectorAll('path');
+
+                // 6. Add non-glass background shapes
+                const backgroundShapesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                backgroundShapesGroup.id = 'backgroundShapes';
+                liveBackgroundShapes.forEach(shape => {
+                    const clone = shape.cloneNode(true);
+                    clone.classList.remove('blob-shape', 'selected'); // Clean UI classes
+                    backgroundShapesGroup.appendChild(clone);
+                });
+                mainGroup.appendChild(backgroundShapesGroup);
+                
+                // 7. Reconstruct the glass effect if there are glass shapes
+                if (liveGlassShapes.length > 0) {
+                    // Create mask definition for the glass shapes
+                    const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+                    const maskId = 'exported-glass-mask';
+                    mask.id = maskId;
+                    liveGlassShapes.forEach(shape => {
+                        const maskPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        maskPath.setAttribute('d', shape.getAttribute('d'));
+                        maskPath.setAttribute('fill', 'white');
+                        mask.appendChild(maskPath);
+                    });
+                    defs.appendChild(mask);
+
+                    // Create the group that will be masked
+                    const maskedContentGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    maskedContentGroup.setAttribute('mask', `url(#${maskId})`);
+                    
+                    // Inside it, create a copy of the background shapes and apply the blur filter.
+                    // This is the key change: replacing <use> with a full copy.
+                    const blurredBackgroundCopy = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    const blurFilterId = this.glassGaussianBlur.parentElement.id;
+                    blurredBackgroundCopy.setAttribute('filter', `url(#${blurFilterId})`);
+                    
+                    liveBackgroundShapes.forEach(shape => {
+                         const clone = shape.cloneNode(true);
+                         clone.classList.remove('blob-shape', 'selected');
+                         blurredBackgroundCopy.appendChild(clone);
+                    });
+                    maskedContentGroup.appendChild(blurredBackgroundCopy);
+                    
+                    // Add the overlay rectangle
+                    const overlayRectClone = this.overlayRect.cloneNode(true);
+                    overlayRectClone.removeAttribute('id');
+                    maskedContentGroup.appendChild(overlayRectClone);
+
+                    mainGroup.appendChild(maskedContentGroup);
+                }
+
+                // 8. Add the visible glass shapes on top
+                const glassShapesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                glassShapesGroup.id = 'glassShapes';
+                liveGlassShapes.forEach(shape => {
+                    const clone = shape.cloneNode(true);
+                    clone.classList.remove('blob-shape', 'selected'); // Clean UI classes
+                    glassShapesGroup.appendChild(clone);
+                });
+                mainGroup.appendChild(glassShapesGroup);
+                
+                // 9. Assemble the final SVG and serialize
+                exportSVG.appendChild(defs);
+                exportSVG.appendChild(mainGroup);
+                
+                const svgString = new XMLSerializer().serializeToString(exportSVG);
+                const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+
+                // 10. Trigger download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'blob-design.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(url);
+            }
+
+            saveShapeToLibrary(shape) {
+                const library = JSON.parse(localStorage.getItem('blobLibrary') || '[]');
+                const existingIndex = library.findIndex(item => item.id === shape.id);
+                const shapeData = {
+                    id: shape.id,
+                    points: shape.points,
+                    color: shape.color,
+                    bounds: shape.bounds,
+                    cornerRadius: shape.cornerRadius || 0,
+                    stroke: shape.stroke,
+                    strokeWidth: shape.strokeWidth,
+                    filter: shape.filter,
+                    effect: shape.effect
+                };
+
+                if (existingIndex > -1) {
+                    library[existingIndex] = shapeData;
+                } else {
+                    library.push(shapeData);
+                }
+                localStorage.setItem('blobLibrary', JSON.stringify(library));
+            }
+
+            loadLibrary() {
+                return JSON.parse(localStorage.getItem('blobLibrary') || '[]');
+            }
+
+            openLibrary() {
+                const modal = document.getElementById('libraryModal');
+                const grid = document.getElementById('libraryGrid');
+                const library = this.loadLibrary();
+                
+                grid.innerHTML = '';
+                
+                library.forEach(shape => {
+                    const item = document.createElement('div');
+                    item.className = 'library-item';
+                    
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('viewBox', `${shape.bounds.x - 10} ${shape.bounds.y - 10} ${shape.bounds.width + 20} ${shape.bounds.height + 20}`);
+                    
+                    if (shape.filter) {
+                        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                        const filterIdMatch = shape.filter.match(/url\(#([^)]+)\)/);
+                        if (filterIdMatch && filterIdMatch[1]) {
+                            const filterId = filterIdMatch[1];
+                            const filterElement = document.getElementById(filterId);
+                            if (filterElement) {
+                                defs.appendChild(filterElement.cloneNode(true));
+                                svg.appendChild(defs);
+                            }
+                        }
+                    }
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', this.createSVGPath(shape.points, shape.cornerRadius || 0));
+                    path.setAttribute('fill', shape.color);
+                    
+                    if (shape.stroke) {
+                        path.setAttribute('stroke', shape.stroke);
+                        path.setAttribute('stroke-width', shape.strokeWidth || 2);
+                    }
+                    if (shape.filter) {
+                        path.setAttribute('filter', shape.filter);
+                    }
+                    
+                    svg.appendChild(path);
+                    
+                    svg.style.cursor = 'pointer';
+                    svg.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.addShapeToCanvas(shape);
+                    });
+                    
+                    item.appendChild(svg);
+                    
+                    const colorPalette = document.createElement('div');
+                    colorPalette.className = 'library-item-colors';
+                    const colors = ['#ff6b6b', 'rgba(0,0,0,0.2)', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+                    colors.forEach(color => {
+                        const colorBtn = document.createElement('div');
+                        colorBtn.className = 'library-color-btn';
+                        colorBtn.style.backgroundColor = color;
+                        if (color === shape.color) {
+                            colorBtn.classList.add('active');
+                        }
+                        colorBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.changeShapeColor(shape, color, path, colorPalette);
+                        });
+                        colorPalette.appendChild(colorBtn);
+                    });
+                    item.appendChild(colorPalette);
+                    
+                    const buttons = document.createElement('div');
+                    buttons.innerHTML = `
+                        <button onclick="blobDesigner.downloadShape(${shape.id})" style="margin: 5px; padding: 5px 10px; background: #4ecdc4; border: none; border-radius: 5px; color: white; cursor: pointer;">Download</button>
+                        <button onclick="blobDesigner.deleteShape(${shape.id})" style="margin: 5px; padding: 5px 10px; background: #ff6b6b; border: none; border-radius: 5px; color: white; cursor: pointer;">Delete</button>
+                    `;
+                    item.appendChild(buttons);
+                    
+                    grid.appendChild(item);
+                });
+                
+                modal.style.display = 'flex';
+                
+                setTimeout(() => {
+                    modal.addEventListener('click', this.handleLibraryOutsideClick.bind(this));
+                }, 100);
+            }
+
+            downloadShape(shapeId) {
+                const library = this.loadLibrary();
+                const shape = library.find(s => s.id === shapeId);
+                if (!shape) return;
+                
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                svg.setAttribute('viewBox', `${shape.bounds.x - 10} ${shape.bounds.y - 10} ${shape.bounds.width + 20} ${shape.bounds.height + 20}`);
+                
+                if (shape.filter) {
+                    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                    const filterIdMatch = shape.filter.match(/url\(#([^)]+)\)/);
+                    if (filterIdMatch && filterIdMatch[1]) {
+                        const filterId = filterIdMatch[1];
+                        const filterElement = document.getElementById(filterId);
+                        if (filterElement) {
+                            defs.appendChild(filterElement.cloneNode(true));
+                            svg.appendChild(defs);
+                        }
+                    }
+                }
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', this.createSVGPath(shape.points));
+                path.setAttribute('fill', shape.color);
+
+                if (shape.stroke) {
+                    path.setAttribute('stroke', shape.stroke);
+                    path.setAttribute('stroke-width', shape.strokeWidth || 2);
+                }
+                if (shape.filter) {
+                    path.setAttribute('filter', shape.filter);
+                }
+                
+                svg.appendChild(path);
+                
+                const svgString = new XMLSerializer().serializeToString(svg);
+                const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `blob-${shapeId}.svg`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+            }
+
+            deleteShape(shapeId) {
+                let library = this.loadLibrary();
+                library = library.filter(s => s.id !== shapeId);
+                localStorage.setItem('blobLibrary', JSON.stringify(library));
+                this.openLibrary();
+            }
+
+            handleLibraryOutsideClick(e) {
+                const libraryContent = document.querySelector('#libraryModal .library-content');
+                if (!libraryContent.contains(e.target)) {
+                    closeLibrary();
+                }
+            }
+
+            changeShapeColor(shape, newColor, pathElement, colorPalette) {
+                shape.color = newColor;
+                pathElement.setAttribute('fill', newColor);
+                
+                colorPalette.querySelectorAll('.library-color-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                const buttons = colorPalette.querySelectorAll('.library-color-btn');
+                buttons.forEach(btn => {
+                    if (btn.style.backgroundColor === newColor) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                const library = this.loadLibrary();
+                const libraryShape = library.find(s => s.id === shape.id);
+                if (libraryShape) {
+                    libraryShape.color = newColor;
+                    localStorage.setItem('blobLibrary', JSON.stringify(library));
+                }
+            }
+
+            addShapeToCanvas(libraryShape) {
+                const targetX = 100;
+                const targetY = 100;
+                
+                const shapeCenterX = libraryShape.bounds.x + libraryShape.bounds.width / 2;
+                const shapeCenterY = libraryShape.bounds.y + libraryShape.bounds.height / 2;
+                const offsetX = targetX - shapeCenterX;
+                const offsetY = targetY - shapeCenterY;
+                
+                const newPoints = libraryShape.points.map(point => ({
+                    x: point.x + offsetX,
+                    y: point.y + offsetY
+                }));
+                
+                const newShape = {
+                    id: Date.now(),
+                    points: newPoints,
+                    color: libraryShape.color,
+                    bounds: this.calculateBounds(newPoints),
+                    cornerRadius: this.defaultCornerSmoothing || libraryShape.cornerRadius || 0,
+                    stroke: libraryShape.stroke,
+                    strokeWidth: libraryShape.strokeWidth,
+                    filter: libraryShape.filter,
+                    effect: libraryShape.effect,
+                };
+                
+                this.shapes.push(newShape);
+                this.renderShape(newShape);
+                this.updateMagneticAttraction();
+            }
+
+            saveSnapshot(svgElement, viewBox, width, height) {
+                const snapshots = JSON.parse(localStorage.getItem('snapLibrary') || '[]');
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+                
+                const snapshot = {
+                    id: Date.now(),
+                    svgString: svgString,
+                    viewBox: viewBox,
+                    width: width,
+                    height: height,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                snapshots.push(snapshot);
+                localStorage.setItem('snapLibrary', JSON.stringify(snapshots));
+                
+                document.getElementById('snapLibraryBtn').style.display = 'block';
+            }
+
+            loadSnapshots() {
+                return JSON.parse(localStorage.getItem('snapLibrary') || '[]');
+            }
+
+            openSnapLibrary() {
+                const modal = document.getElementById('snapLibraryModal');
+                const grid = document.getElementById('snapLibraryGrid');
+                const snapshots = this.loadSnapshots();
+                
+                grid.innerHTML = '';
+                
+                snapshots.forEach(snapshot => {
+                    const item = document.createElement('div');
+                    item.className = 'library-item';
+                    
+                    const previewDiv = document.createElement('div');
+                    previewDiv.innerHTML = snapshot.svgString;
+                    const svgElement = previewDiv.querySelector('svg');
+                    if (svgElement) {
+                        svgElement.style.width = '100px';
+                        svgElement.style.height = '100px';
+                        item.appendChild(svgElement);
+                    }
+                    
+                    const timestamp = document.createElement('div');
+                    timestamp.textContent = snapshot.timestamp;
+                    timestamp.style.fontSize = '12px';
+                    timestamp.style.color = '#ccc';
+                    timestamp.style.marginBottom = '10px';
+                    item.appendChild(timestamp);
+                    
+                    const buttons = document.createElement('div');
+                    buttons.innerHTML = `
+                        <button onclick="blobDesigner.downloadSnapshot(${snapshot.id})" style="margin: 5px; padding: 5px 10px; background: #4ecdc4; border: none; border-radius: 5px; color: white; cursor: pointer;">Download</button>
+                        <button onclick="blobDesigner.deleteSnapshot(${snapshot.id})" style="margin: 5px; padding: 5px 10px; background: #ff6b6b; border: none; border-radius: 5px; color: white; cursor: pointer;">Delete</button>
+                    `;
+                    item.appendChild(buttons);
+                    
+                    grid.appendChild(item);
+                });
+                
+                modal.style.display = 'flex';
+            }
+
+            downloadSnapshot(snapshotId) {
+                const snapshots = this.loadSnapshots();
+                const snapshot = snapshots.find(s => s.id === snapshotId);
+                if (!snapshot) return;
+                
+                const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `snapshot-${snapshotId}.svg`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+            }
+
+            deleteSnapshot(snapshotId) {
+                let snapshots = this.loadSnapshots();
+                snapshots = snapshots.filter(s => s.id !== snapshotId);
+                localStorage.setItem('snapLibrary', JSON.stringify(snapshots));
+                
+                if (snapshots.length === 0) {
+                    document.getElementById('snapLibraryBtn').style.display = 'none';
+                }
+                
+                this.openSnapLibrary();
+            }
+
+            checkSnapLibrary() {
+                const snapshots = this.loadSnapshots();
+                if (snapshots.length > 0) {
+                    document.getElementById('snapLibraryBtn').style.display = 'block';
+                }
+            }
+
+            startSelectionBox(pos) {
+                this.selectionBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                this.selectionBox.classList.add('selection-box');
+                this.selectionBox.setAttribute('x', pos.x);
+                this.selectionBox.setAttribute('y', pos.y);
+                this.selectionBox.setAttribute('width', 0);
+                this.selectionBox.setAttribute('height', 0);
+                this.canvas.appendChild(this.selectionBox);
+            }
+
+            updateSelectionBox(currentPos) {
+                if (!this.selectionBox || !this.selectionStart) return;
+                
+                const x = Math.min(this.selectionStart.x, currentPos.x);
+                const y = Math.min(this.selectionStart.y, currentPos.y);
+                const width = Math.abs(currentPos.x - this.selectionStart.x);
+                const height = Math.abs(currentPos.y - this.selectionStart.y);
+                
+                this.selectionBox.setAttribute('x', x);
+                this.selectionBox.setAttribute('y', y);
+                this.selectionBox.setAttribute('width', width);
+                this.selectionBox.setAttribute('height', height);
+                
+                this.updateSelectionFromBox(x, y, width, height);
+            }
+
+            updateSelectionFromBox(x, y, width, height) {
+                this.selectedShapes = this.shapes.filter(shape => {
+                    const bounds = shape.bounds;
+                    return (bounds.x < x + width && bounds.x + bounds.width > x &&
+                            bounds.y < y + height && bounds.y + bounds.height > y);
+                });
+                this.updateShapeSelection();
+            }
+
+            finishSelection() {
+                if (this.selectionBox) {
+                    this.selectionBox.remove();
+                    this.selectionBox = null;
+                }
+            }
+
+            clearSelection() {
+                this.selectedShapes = [];
+                this.updateShapeSelection();
+            }
+
+            updateShapeSelection() {
+                this.canvas.querySelectorAll('.blob-shape').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                this.selectedShapes.forEach(shape => {
+                    const pathElement = this.canvas.querySelector(`[data-shape-id="${shape.id}"]`);
+                    if (pathElement) {
+                        pathElement.classList.add('selected');
+                    }
+                });
+            }
+
+            clearCanvas() {
+                this.shapes = [];
+                this.selectedShapes = [];
+                this.backgroundShapesContainer.innerHTML = '';
+                this.glassShapesContainer.innerHTML = '';
+                this.glassMask.innerHTML = '<rect width="100%" height="100%" fill="black" />';
+                this.canvas.querySelectorAll('.preview-path, .selection-box').forEach(el => el.remove());
+                this.closeEditingPanel();
+                this.isDrawing = false;
+                this.isDragging = false;
+                this.selectedShape = null;
+                this.isSelecting = false;
+                this.selectionStart = null;
+                this.selectionBox = null;
+                this.currentPath = [];
+                document.body.style.cursor = 'crosshair';
+            }
+        }
+
+        function closeLibrary() {
+            const modal = document.getElementById('libraryModal');
+            modal.style.display = 'none';
+            modal.removeEventListener('click', blobDesigner.handleLibraryOutsideClick);
+        }
+
+        function closeSnapLibrary() {
+            document.getElementById('snapLibraryModal').style.display = 'none';
+        }
+
+        const blobDesigner = new BlobDesigner();
+    </script>
+</body>
+</html>
