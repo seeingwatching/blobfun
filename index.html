@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,7 +55,7 @@
         .default-corner-input input:focus {
             outline: none;
             background: rgba(255, 255, 255, 0.15);
-            border-color: #4ecdc4;
+            border-color: #8c8c8c;
         }
 
         .color-btn {
@@ -77,15 +78,49 @@
             border-color: white;
             transform: scale(1.15);
         }
-
-        .toolbar {
+        
+        .toolbar-container {
             position: fixed;
             top: 10px;
             left: 10px;
             right: 10px;
+            z-index: 100;
+        }
+
+        .toolbar-container::before, .toolbar-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            pointer-events: none;
+            z-index: 2;
+            transition: opacity 0.3s;
+            opacity: 0;
+            border-radius: 12px;
+        }
+
+        .toolbar-container::before {
+            left: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.8), transparent);
+        }
+
+        .toolbar-container::after {
+            right: 0;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.8), transparent);
+        }
+
+        .toolbar-container.scrolled-left::before {
+            opacity: 1;
+        }
+
+        .toolbar-container.scrolled-right::after {
+            opacity: 1;
+        }
+
+        .toolbar {
             display: flex;
             gap: 10px;
-            z-index: 100;
             align-items: center;
             overflow-x: auto;
             -ms-overflow-style: none; /* IE and Edge */
@@ -101,7 +136,7 @@
         }
 
 
-        .toolbar button, .toolbar select, .toolbar .default-corner-input {
+        .toolbar button, .toolbar select, .toolbar .default-corner-input, .toolbar .glass-controls {
             flex-shrink: 0;
         }
 
@@ -140,29 +175,6 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-
-        /* Other Settings Dropdown */
-        .settings-dropdown {
-            position: relative;
-        }
-
-        .settings-panel {
-            display: none;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 15px;
-            z-index: 210; /* Increased z-index */
-            width: max-content;
-        }
-
-        .settings-panel.visible {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
 
         .glass-controls {
             display: flex;
@@ -219,7 +231,7 @@
             width: 15px;
             height: 15px;
             border-radius: 50%;
-            background: #4ecdc4;
+            background: #8c8c8c;
             cursor: pointer;
             margin-top: -6px; /* Center thumb on track */
         }
@@ -227,7 +239,7 @@
             width: 15px;
             height: 15px;
             border-radius: 50%;
-            background: #4ecdc4;
+            background: #8c8c8c;
             cursor: pointer;
             border: none;
         }
@@ -238,6 +250,23 @@
             border-radius: 5px;
             background: transparent;
             border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .glass-controls .value-input {
+            width: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 4px;
+            padding: 2px 5px;
+            text-align: center;
+            font-size: 13px;
+            -moz-appearance: textfield;
+        }
+        .glass-controls .value-input::-webkit-outer-spin-button,
+        .glass-controls .value-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .instructions {
@@ -304,9 +333,9 @@
         }
 
         .grid-point.active {
-            background: #4ecdc4;
-            border-color: #4ecdc4;
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+            background: #8c8c8c;
+            border-color: #8c8c8c;
+            box-shadow: 0 0 20px rgba(140, 140, 140, 0.6);
             transform: scale(1.2);
         }
 
@@ -354,7 +383,7 @@
             bottom: 20px;
             right: 20px;
             padding: 15px 25px;
-            background: #4ecdc4;
+            background: #8c8c8c;
             border: none;
             border-radius: 10px;
             color: white;
@@ -367,7 +396,6 @@
 
         .draw-mode-btn:hover {
             background: #45b7d1;
-            transform: scale(1.05);
         }
 
         .editing-panel {
@@ -401,7 +429,7 @@
             height: 6px;
             border-radius: 3px;
             background: linear-gradient(to right, 
-                #4ecdc4 0%, #4ecdc4 33%, 
+                #8c8c8c 0%, #8c8c8c 33%, 
                 #ff7f7f 33%, #ff7f7f 66%, 
                 #ff4444 66%, #ff4444 100%);
             outline: none;
@@ -414,7 +442,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #4ecdc4;
+            background: #8c8c8c;
             cursor: pointer;
         }
 
@@ -422,15 +450,40 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #4ecdc4;
+            background: #8c8c8c;
             cursor: pointer;
             border: none;
+        }
+
+        .flip-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .flip-buttons button {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .flip-buttons button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #8c8c8c;
         }
 
         .panel-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .panel-buttons button {
@@ -443,23 +496,20 @@
             transition: all 0.3s ease;
         }
 
-        .apply-btn {
-            background: #4ecdc4;
-            color: white;
-        }
-
-        .apply-btn:hover {
+        .panel-buttons .duplicate-btn {
             background: #45b7d1;
-        }
-
-        .cancel-btn {
-            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .panel-buttons .duplicate-btn:hover {
+            background: #8c8c8c;
         }
 
-        .cancel-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .panel-buttons .delete-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        .panel-buttons .delete-btn:hover {
+            background: #e05252;
         }
 
         .library-modal {
@@ -479,7 +529,7 @@
             background: #2a2a2a;
             border-radius: 15px;
             padding: 30px;
-            max-width: 80vw;
+            max-width: 90vw;
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
@@ -487,18 +537,21 @@
 
         .library-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
             margin-top: 20px;
         }
 
         .library-item {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            padding: 15px;
+            padding: 10px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .library-item:hover {
@@ -509,6 +562,9 @@
             width: 100px;
             height: 100px;
             margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .library-item-colors {
@@ -538,6 +594,30 @@
             transform: scale(1.2);
         }
 
+        .library-item-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .library-item-buttons button {
+            flex: 1;
+            padding: 8px 5px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            background-color: #8c8c8c;
+            transition: opacity 0.2s;
+        }
+        .library-item-buttons button.delete {
+            background-color: #ff6b6b;
+        }
+        .library-item-buttons button:hover {
+            opacity: 0.85;
+        }
+
         .blob-shape {
             cursor: pointer;
         }
@@ -550,15 +630,15 @@
         }
 
         .blob-shape.selected {
-            stroke: #4ecdc4;
+            stroke: #8c8c8c;
             stroke-width: 3;
             stroke-dasharray: 8,4;
             animation: dash 1s linear infinite;
         }
 
         .selection-box {
-            fill: rgba(78, 205, 196, 0.1);
-            stroke: #4ecdc4;
+            fill: rgba(140, 140, 140, 0.1);
+            stroke: #8c8c8c;
             stroke-width: 2;
             stroke-dasharray: 5,5;
             animation: dash 1s linear infinite;
@@ -645,37 +725,32 @@
         <g id="glassShapes"></g>
     </svg>
 
-    <div class="toolbar">
-        <button id="exportBtn">Export SVG</button>
-        <div class="default-corner-input">
-            <input type="number" id="defaultCornerInput" min="0" max="400" placeholder="Def Corner Smooth..">
-        </div>
-        <button id="snapLibraryBtn" style="display: none;">Snap Library</button>
-        <button id="libraryBtn">Shapes Library</button>
-        <button id="clearBtn1">Clear Canvas</button>
-        <div class="settings-dropdown">
-            <button id="settingsToggleBtn">Other Settings ▼</button>
-        </div>
-    </div>
-    
-    <!-- Settings Panel is moved out of the toolbar to avoid clipping issues with overflow -->
-    <div class="settings-panel" id="settingsPanel">
-        <div class="glass-controls">
-            <label>Blur: <input type="range" id="blurRange" min="0" max="30" value="6" step="1"><span id="blurValue">6</span></label>
-            <label>Overlay: <input type="color" id="overlayColor" value="#0000ff"></label>
-            <label>Intensity: <input type="range" id="overlayOpacity" min="0" max="100" value="20"><span id="overlayOpacityValue">20</span></label>
-            <select id="blendModeSelect" title="Blend Mode">
-                <option value="multiply">Multiply</option>
-                <option value="screen">Screen</option>
-                <option value="overlay">Overlay</option>
-                <option value="darken">Darken</option>
-                <option value="lighten">Lighten</option>
-                <option value="color-dodge">Color Dodge</option>
-            </select>
-        </div>
-        <div class="glass-controls">
-            <label>Magnet Dist: <input type="range" id="distanceRange" min="0" max="300" value="150" step="1"><span id="distanceValue">150</span></label>
-            <label>Magnet Force: <input type="range" id="attractionRange" min="-100" max="150" value="45" step="1"><span id="attractionValue">45</span></label>
+    <div class="toolbar-container">
+        <div class="toolbar">
+            <button id="exportBtn">Export SVG</button>
+            <div class="default-corner-input">
+                <input type="number" id="defaultCornerInput" min="0" max="400" placeholder="Def Corner Smooth..">
+            </div>
+            <button id="snapLibraryBtn" style="display: none;">Snap Library</button>
+            <button id="libraryBtn">Shapes Lib</button>
+            <button id="clearBtn1">Clear Canvas</button>
+            <div class="glass-controls">
+                <label>Blur: <input type="range" id="blurRange" min="0" max="30" value="6" step="1"><span id="blurValue">6</span></label>
+                <label>Overlay: <input type="color" id="overlayColor" value="#0000ff"></label>
+                <label>Intensity: <input type="range" id="overlayOpacity" min="0" max="100" value="20"><span id="overlayOpacityValue">20</span></label>
+                <select id="blendModeSelect" title="Blend Mode">
+                    <option value="multiply">Multiply</option>
+                    <option value="screen">Screen</option>
+                    <option value="overlay">Overlay</option>
+                    <option value="darken">Darken</option>
+                    <option value="lighten">Lighten</option>
+                    <option value="color-dodge">Color Dodge</option>
+                </select>
+            </div>
+            <div class="glass-controls">
+                <label>Magnet Dist: <input type="range" id="distanceRange" min="0" max="300" value="150" step="1"><input type="number" id="distanceValueInput" class="value-input" value="150"></label>
+                <label>Magnet Force: <input type="range" id="attractionRange" min="-100" max="150" value="45" step="1"><input type="number" id="attractionValueInput" class="value-input" value="45"></label>
+            </div>
         </div>
     </div>
 
@@ -694,12 +769,12 @@
         <h3 style="text-align: center; margin-top: 0; color: white;">Create Shape</h3>
         <div class="grid-color-palette">
             <div class="color-btn active" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
-            <div class="color-btn" style="background-color: #4ecdc4;" data-color="#4ecdc4"></div>
-            <div class="color-btn" style="background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4)); border: 2px solid gray;" data-effect="glass"></div>
+            <div class="color-btn" style="background-color: #8c8c8c;" data-color="#8c8c8c"></div>
             <div class="color-btn" style="background-color: #45b7d1;" data-color="#45b7d1"></div>
             <div class="color-btn" style="background-color: #96ceb4;" data-color="#96ceb4"></div>
             <div class="color-btn" style="background-color: #feca57;" data-color="#feca57"></div>
             <div class="color-btn" style="background-color: #ff9ff3;" data-color="#ff9ff3"></div>
+            <div class="color-btn" style="background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4)); border: 2px solid gray;" data-effect="glass"></div>
         </div>
         <div class="grid-container" id="gridContainer"></div>
         <div class="grid-controls">
@@ -711,7 +786,7 @@
     <div class="library-modal" id="libraryModal">
         <div class="library-content">
             <button onclick="closeLibrary()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 10;">×</button>
-            <h2>Shapes Library</h2>
+            <h2>Shapes Lib</h2>
             <div class="library-grid" id="libraryGrid"></div>
         </div>
     </div>
@@ -756,6 +831,10 @@
                 this.maxDistance = 150;
                 this.maxAttraction = 45;
 
+                // Toolbar scroll gradients
+                this.toolbar = document.querySelector('.toolbar');
+                this.toolbarContainer = document.querySelector('.toolbar-container');
+
                 // Glass effect elements
                 this.blurControl = document.getElementById('blurRange');
                 this.overlayColorControl = document.getElementById('overlayColor');
@@ -767,11 +846,8 @@
                 // Magnet controls
                 this.distanceControl = document.getElementById('distanceRange');
                 this.attractionControl = document.getElementById('attractionRange');
-
-                // Settings Panel
-                this.settingsPanel = document.getElementById('settingsPanel');
-                this.settingsToggleButton = document.getElementById('settingsToggleBtn');
-                this.boundSettingsOutsideClick = this.handleSettingsOutsideClick.bind(this);
+                this.distanceValueInput = document.getElementById('distanceValueInput');
+                this.attractionValueInput = document.getElementById('attractionValueInput');
                 
                 this.init();
             }
@@ -779,6 +855,8 @@
             init() {
                 this.setupEventListeners();
                 this.loadLibrary();
+                this.loadSettings();
+                this.updateMagneticAttraction();
                 this.checkSnapLibrary();
                 setTimeout(() => {
                     const instructions = document.querySelector('.instructions');
@@ -791,16 +869,26 @@
                 // Adjust canvas position to be below the toolbar
                 this.adjustCanvasPosition();
                 window.addEventListener('resize', this.adjustCanvasPosition.bind(this));
+
+                // Initial check for toolbar gradients
+                this.updateToolbarGradients();
             }
 
             adjustCanvasPosition() {
-                const toolbar = document.querySelector('.toolbar');
-                if (toolbar) {
-                    const toolbarHeight = toolbar.offsetHeight;
+                const toolbarContainer = document.querySelector('.toolbar-container');
+                if (toolbarContainer) {
+                    const toolbarHeight = toolbarContainer.offsetHeight;
                     this.canvas.style.position = 'absolute';
                     this.canvas.style.top = `${toolbarHeight}px`;
                     this.canvas.style.height = `calc(100vh - ${toolbarHeight}px)`;
                 }
+            }
+            
+            addSliderReset(slider, defaultValue) {
+                slider.addEventListener('dblclick', () => {
+                    slider.value = defaultValue;
+                    slider.dispatchEvent(new Event('input', { bubbles: true }));
+                });
             }
 
             setupEventListeners() {
@@ -819,14 +907,17 @@
                 document.getElementById('snapLibraryBtn').addEventListener('click', this.openSnapLibrary.bind(this));
                 document.getElementById('libraryBtn').addEventListener('click', this.openLibrary.bind(this));
                 document.getElementById('clearBtn1').addEventListener('click', this.clearCanvas.bind(this));
-                this.settingsToggleButton.addEventListener('click', this.toggleSettingsPanel.bind(this));
 
+                // Toolbar scroll gradients
+                this.toolbar.addEventListener('scroll', this.updateToolbarGradients.bind(this));
+                window.addEventListener('resize', this.updateToolbarGradients.bind(this));
 
                 // Glass effect controls
                 this.blurControl.addEventListener('input', (e) => {
                     this.glassGaussianBlur.setAttribute('stdDeviation', e.target.value);
                     document.getElementById('blurValue').textContent = e.target.value;
                 });
+                this.addSliderReset(this.blurControl, 6);
 
                 this.overlayColorControl.addEventListener('input', (e) => {
                     this.overlayRect.setAttribute('fill', e.target.value);
@@ -836,23 +927,45 @@
                     this.overlayRect.setAttribute('opacity', e.target.value / 100);
                     document.getElementById('overlayOpacityValue').textContent = e.target.value;
                 });
+                this.addSliderReset(this.overlayOpacityControl, 20);
 
                 this.blendModeControl.addEventListener('input', (e) => {
                     this.overlayRect.style.mixBlendMode = e.target.value;
                 });
 
-                // Magnet controls
+                // Magnet controls and inputs
                 this.distanceControl.addEventListener('input', (e) => {
                     this.maxDistance = parseInt(e.target.value, 10);
                     this.updateMagneticAttraction();
-                    document.getElementById('distanceValue').textContent = e.target.value;
+                    this.distanceValueInput.value = e.target.value;
                 });
+                this.distanceValueInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value, 10);
+                    if (!isNaN(value)) {
+                        this.maxDistance = value;
+                        this.distanceControl.value = Math.max(this.distanceControl.min, Math.min(this.distanceControl.max, value));
+                        this.updateMagneticAttraction();
+                        this.saveSettings();
+                    }
+                });
+                this.addSliderReset(this.distanceControl, 150);
+
 
                 this.attractionControl.addEventListener('input', (e) => {
                     this.maxAttraction = parseInt(e.target.value, 10);
                     this.updateMagneticAttraction();
-                    document.getElementById('attractionValue').textContent = e.target.value;
+                    this.attractionValueInput.value = e.target.value;
                 });
+                this.attractionValueInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value, 10);
+                    if (!isNaN(value)) {
+                        this.maxAttraction = value;
+                        this.attractionControl.value = Math.max(this.attractionControl.min, Math.min(this.attractionControl.max, value));
+                        this.updateMagneticAttraction();
+                        this.saveSettings();
+                    }
+                });
+                this.addSliderReset(this.attractionControl, 45);
 
 
                 // Default corner smoothing input
@@ -865,48 +978,38 @@
                     } else {
                         this.defaultCornerSmoothing = value;
                     }
+                    this.saveSettings();
                 });
+
+                // Add persistence listeners
+                const controlsToSave = [
+                    this.blurControl,
+                    this.overlayColorControl,
+                    this.overlayOpacityControl,
+                    this.blendModeControl,
+                    this.distanceControl,
+                    this.attractionControl,
+                ];
+                controlsToSave.forEach(control => {
+                    control.addEventListener('input', this.saveSettings.bind(this));
+                });
+
 
                 // Prevent context menu
                 this.canvas.addEventListener('contextmenu', e => e.preventDefault());
             }
 
-            toggleSettingsPanel(e) {
-                e.stopPropagation(); // Prevent this click from being caught by the 'outside' handler
+            updateToolbarGradients() {
+                const el = this.toolbar;
+                const scrollLeft = el.scrollLeft;
+                const scrollWidth = el.scrollWidth;
+                const clientWidth = el.clientWidth;
                 
-                const isVisible = this.settingsPanel.classList.toggle('visible');
+                // Use a small tolerance for floating point issues
+                const tolerance = 1;
 
-                if (isVisible) {
-                    // Position the panel relative to the toggle button
-                    const btnRect = this.settingsToggleButton.getBoundingClientRect();
-                    
-                    this.settingsPanel.style.position = 'fixed'; // Use fixed to position relative to viewport
-                    this.settingsPanel.style.top = `${btnRect.bottom + 5}px`;
-                    
-                    // To right-align the panel with the button, we need its width AFTER it becomes visible
-                    const panelRect = this.settingsPanel.getBoundingClientRect();
-                    this.settingsPanel.style.left = `${btnRect.right - panelRect.width}px`;
-
-                    // Add a listener to close the panel when clicking outside
-                    // Use a timeout to ensure this listener is added after the current click event is fully processed
-                    setTimeout(() => {
-                        document.addEventListener('mousedown', this.boundSettingsOutsideClick);
-                    }, 0);
-                } else {
-                    // If the panel was just hidden, remove the outside click listener
-                    document.removeEventListener('mousedown', this.boundSettingsOutsideClick);
-                }
-            }
-
-
-            handleSettingsOutsideClick(e) {
-                if (this.settingsPanel.classList.contains('visible') &&
-                    !this.settingsPanel.contains(e.target) &&
-                    !this.settingsToggleButton.contains(e.target)) {
-                    
-                    this.settingsPanel.classList.remove('visible');
-                    document.removeEventListener('mousedown', this.boundSettingsOutsideClick);
-                }
+                this.toolbarContainer.classList.toggle('scrolled-left', scrollLeft > tolerance);
+                this.toolbarContainer.classList.toggle('scrolled-right', scrollLeft < scrollWidth - clientWidth - tolerance);
             }
 
             getEventPos(e) {
@@ -1199,7 +1302,7 @@
                     const firstPoint = this.selectedGridPoints[0];
                     const firstGridPoint = this.gridPoints.find(gp => gp.row === firstPoint.row && gp.col === firstPoint.col);
                     if (firstGridPoint) {
-                        firstGridPoint.element.style.boxShadow = '0 0 25px #4ecdc4, 0 0 35px #4ecdc4';
+                        firstGridPoint.element.style.boxShadow = '0 0 25px #8c8c8c, 0 0 35px #8c8c8c';
                     }
                 }
             }
@@ -1294,10 +1397,10 @@
                     effect: this.currentEffect,
                 };
                 
+                this.saveShapeToLibrary(shape);
                 this.shapes.push(shape);
                 this.renderShape(shape);
                 this.updateMagneticAttraction();
-                this.saveShapeToLibrary(shape);
                 this.closeGridWindow();
             }
 
@@ -1641,6 +1744,14 @@
                         <input type="range" class="slider" id="cornerSlider" 
                                min="0" max="100" value="${this.convertValueToSlider(initialRadius)}" step="1">
                     </div>
+                    <div class="flip-buttons">
+                        <button class="flip-h-btn" title="Flip Horizontal">↔</button>
+                        <button class="flip-v-btn" title="Flip Vertical">↕</button>
+                    </div>
+                    <div class="panel-buttons">
+                        <button class="duplicate-btn">Duplicate</button>
+                        <button class="delete-btn">Delete</button>
+                    </div>
                 `;
                 
                 document.body.appendChild(panel);
@@ -1654,6 +1765,8 @@
                 
                 const slider = panel.querySelector('#cornerSlider');
                 const cornerValue = panel.querySelector('#cornerValue');
+
+                this.addSliderReset(slider, 0);
                 
                 slider.addEventListener('input', (e) => {
                     const sliderValue = parseInt(e.target.value);
@@ -1669,6 +1782,120 @@
                 slider.addEventListener('touchend', () => {
                     this.applyEdit();
                 });
+
+                panel.querySelector('.duplicate-btn').addEventListener('click', this.duplicateSelectedShapes.bind(this));
+                panel.querySelector('.delete-btn').addEventListener('click', this.deleteSelectedShapes.bind(this));
+                panel.querySelector('.flip-h-btn').addEventListener('click', () => this.flipShapes('horizontal'));
+                panel.querySelector('.flip-v-btn').addEventListener('click', () => this.flipShapes('vertical'));
+            }
+            
+            calculateSelectionBounds(shapes) {
+                if (!shapes || shapes.length === 0) return { x: 0, y: 0, width: 0, height: 0 };
+
+                let minX = Infinity, maxX = -Infinity;
+                let minY = Infinity, maxY = -Infinity;
+
+                shapes.forEach(shape => {
+                    const bounds = this.calculateBounds(shape.points); // Recalculate bounds to be sure
+                    minX = Math.min(minX, bounds.x);
+                    maxX = Math.max(maxX, bounds.x + bounds.width);
+                    minY = Math.min(minY, bounds.y);
+                    maxY = Math.max(maxY, bounds.y + bounds.height);
+                });
+
+                return {
+                    x: minX,
+                    y: minY,
+                    width: maxX - minX,
+                    height: maxY - minY
+                };
+            }
+            
+            flipShapes(axis) {
+                if (!this.editingShapes || this.editingShapes.length === 0) return;
+
+                const selectionBounds = this.calculateSelectionBounds(this.editingShapes);
+                const centerX = selectionBounds.x + selectionBounds.width / 2;
+                const centerY = selectionBounds.y + selectionBounds.height / 2;
+
+                this.editingShapes.forEach(shape => {
+                    const flipPoints = (points) => {
+                        if (!points) return null;
+                        return points.map(point => {
+                            if (axis === 'horizontal') {
+                                return { x: centerX - (point.x - centerX), y: point.y };
+                            } else { // vertical
+                                return { x: point.x, y: centerY - (point.y - centerY) };
+                            }
+                        });
+                    };
+
+                    shape.points = flipPoints(shape.points);
+                    // Also flip the original points for magnetism to work correctly after flip
+                    if (shape.originalPoints) {
+                        shape.originalPoints = flipPoints(shape.originalPoints);
+                    }
+
+                    shape.bounds = this.calculateBounds(shape.points);
+                    
+                    this.updateShapePath(shape);
+                    this.saveShapeToLibrary(shape);
+                });
+
+                this.updateMagneticAttraction();
+            }
+
+            duplicateSelectedShapes() {
+                if (!this.editingShapes || this.editingShapes.length === 0) return;
+
+                const newShapes = [];
+                this.editingShapes.forEach(shape => {
+                    const newShape = JSON.parse(JSON.stringify(shape)); // Deep clone
+                    newShape.id = Date.now() + Math.random();
+                    
+                    // Offset
+                    newShape.points = newShape.points.map(p => ({ x: p.x + 20, y: p.y + 20 }));
+                    if (newShape.originalPoints) {
+                        newShape.originalPoints = newShape.originalPoints.map(p => ({ x: p.x + 20, y: p.y + 20 }));
+                    }
+                    newShape.bounds = this.calculateBounds(newShape.points);
+
+                    this.shapes.push(newShape);
+                    this.renderShape(newShape);
+                    this.saveShapeToLibrary(newShape);
+                    newShapes.push(newShape);
+                });
+
+                this.closeEditingPanel();
+                this.clearSelection();
+                this.selectedShapes = newShapes;
+                this.updateMagneticAttraction();
+            }
+
+            deleteSelectedShapes() {
+                if (!this.editingShapes || this.editingShapes.length === 0) return;
+
+                const idsToDelete = this.editingShapes.map(s => s.id);
+
+                // Remove from main shapes array
+                this.shapes = this.shapes.filter(s => !idsToDelete.includes(s.id));
+
+                // Remove from DOM
+                idsToDelete.forEach(id => {
+                    const shapeEl = this.canvas.querySelector(`[data-shape-id="${id}"]`);
+                    if (shapeEl) shapeEl.remove();
+
+                    const maskEl = this.glassMask.querySelector(`[data-mask-for="${id}"]`);
+                    if (maskEl) maskEl.remove();
+                });
+
+                // Remove from library
+                let library = this.loadLibrary();
+                library = library.filter(s => !idsToDelete.includes(s.id));
+                localStorage.setItem('blobLibrary', JSON.stringify(library));
+
+                this.closeEditingPanel();
+                this.clearSelection();
             }
 
             previewCornerSmoothing(shapes, radius) {
@@ -1808,14 +2035,66 @@
                 URL.revokeObjectURL(url);
             }
 
+            saveSettings() {
+                const settings = {
+                    defaultCornerSmoothing: this.defaultCornerSmoothing,
+                    blur: this.blurControl.value,
+                    overlayColor: this.overlayColorControl.value,
+                    overlayOpacity: this.overlayOpacityControl.value,
+                    blendMode: this.blendModeControl.value,
+                    magnetDistance: this.distanceValueInput.value,
+                    magnetAttraction: this.attractionValueInput.value,
+                };
+                localStorage.setItem('blobDesignerSettings', JSON.stringify(settings));
+            }
+
+            loadSettings() {
+                const savedSettings = localStorage.getItem('blobDesignerSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+
+                    // Apply default corner smoothing
+                    const cornerValue = parseInt(settings.defaultCornerSmoothing, 10) || 0;
+                    document.getElementById('defaultCornerInput').value = cornerValue > 0 ? cornerValue : '';
+                    this.defaultCornerSmoothing = cornerValue;
+
+                    // Apply glass controls
+                    this.blurControl.value = settings.blur || 6;
+                    this.glassGaussianBlur.setAttribute('stdDeviation', this.blurControl.value);
+                    document.getElementById('blurValue').textContent = this.blurControl.value;
+
+                    this.overlayColorControl.value = settings.overlayColor || '#0000ff';
+                    this.overlayRect.setAttribute('fill', this.overlayColorControl.value);
+
+                    this.overlayOpacityControl.value = settings.overlayOpacity || 20;
+                    this.overlayRect.setAttribute('opacity', this.overlayOpacityControl.value / 100);
+                    document.getElementById('overlayOpacityValue').textContent = this.overlayOpacityControl.value;
+
+                    this.blendModeControl.value = settings.blendMode || 'multiply';
+                    this.overlayRect.style.mixBlendMode = this.blendModeControl.value;
+
+                    // Apply magnet controls
+                    const magnetDist = settings.magnetDistance || 150;
+                    this.distanceControl.value = magnetDist;
+                    this.distanceValueInput.value = magnetDist;
+                    this.maxDistance = parseInt(magnetDist, 10);
+
+                    const magnetAttraction = settings.magnetAttraction || 45;
+                    this.attractionControl.value = magnetAttraction;
+                    this.attractionValueInput.value = magnetAttraction;
+                    this.maxAttraction = parseInt(magnetAttraction, 10);
+                }
+            }
+
             saveShapeToLibrary(shape) {
                 const library = JSON.parse(localStorage.getItem('blobLibrary') || '[]');
                 const existingIndex = library.findIndex(item => item.id === shape.id);
+                const pointsToSave = shape.originalPoints || shape.points;
                 const shapeData = {
                     id: shape.id,
-                    points: shape.points,
+                    points: pointsToSave,
                     color: shape.color,
-                    bounds: shape.bounds,
+                    bounds: this.calculateBounds(pointsToSave),
                     cornerRadius: shape.cornerRadius || 0,
                     stroke: shape.stroke,
                     strokeWidth: shape.strokeWidth,
@@ -1838,24 +2117,25 @@
             openLibrary() {
                 const modal = document.getElementById('libraryModal');
                 const grid = document.getElementById('libraryGrid');
-                const library = this.loadLibrary().filter(Boolean);
+                const library = this.loadLibrary().filter(Boolean).reverse();
                 
                 grid.innerHTML = '';
                 
                 const paletteData = [
                     { color: '#ff6b6b', stroke: null, strokeWidth: null, filter: null, effect: null },
-                    { color: '#4ecdc4', stroke: null, strokeWidth: null, filter: null, effect: null },
-                    { effect: 'glass', color: 'rgba(255,255,255,0.22)', stroke: 'rgba(128,128,128,0.85)', strokeWidth: '2', filter: null },
+                    { color: '#8c8c8c', stroke: null, strokeWidth: null, filter: null, effect: null },
                     { color: '#45b7d1', stroke: null, strokeWidth: null, filter: null, effect: null },
                     { color: '#96ceb4', stroke: null, strokeWidth: null, filter: null, effect: null },
                     { color: '#feca57', stroke: null, strokeWidth: null, filter: null, effect: null },
                     { color: '#ff9ff3', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { effect: 'glass', color: 'rgba(255,255,255,0.22)', stroke: 'rgba(128,128,128,0.85)', strokeWidth: '2', filter: null },
                 ];
 
 
                 library.forEach(shape => {
                     const item = document.createElement('div');
                     item.className = 'library-item';
+                    item.dataset.libraryItemId = shape.id;
                     
                     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                     svg.setAttribute('viewBox', `${shape.bounds.x - 10} ${shape.bounds.y - 10} ${shape.bounds.width + 20} ${shape.bounds.height + 20}`);
@@ -1923,9 +2203,10 @@
                     item.appendChild(colorPalette);
                     
                     const buttons = document.createElement('div');
+                    buttons.className = 'library-item-buttons';
                     buttons.innerHTML = `
-                        <button onclick="blobDesigner.downloadShape(${shape.id})" style="margin: 5px; padding: 5px 10px; background: #4ecdc4; border: none; border-radius: 5px; color: white; cursor: pointer;">Download</button>
-                        <button onclick="blobDesigner.deleteShape(${shape.id})" style="margin: 5px; padding: 5px 10px; background: #ff6b6b; border: none; border-radius: 5px; color: white; cursor: pointer;">Delete</button>
+                        <button onclick="blobDesigner.downloadShape(event, ${shape.id})">Download</button>
+                        <button class="delete" onclick="blobDesigner.deleteShape(event, ${shape.id})">Delete</button>
                     `;
                     item.appendChild(buttons);
                     
@@ -1939,7 +2220,8 @@
                 }, 100);
             }
 
-            downloadShape(shapeId) {
+            downloadShape(event, shapeId) {
+                event.stopPropagation();
                 const library = this.loadLibrary();
                 const shape = library.find(s => s.id === shapeId);
                 if (!shape) return;
@@ -1987,11 +2269,15 @@
                 URL.revokeObjectURL(url);
             }
 
-            deleteShape(shapeId) {
+            deleteShape(event, shapeId) {
+                event.stopPropagation();
                 let library = this.loadLibrary();
                 library = library.filter(s => s.id !== shapeId);
                 localStorage.setItem('blobLibrary', JSON.stringify(library));
-                this.openLibrary();
+                const itemToRemove = document.querySelector(`.library-item[data-library-item-id='${shapeId}']`);
+                if (itemToRemove) {
+                    itemToRemove.remove();
+                }
             }
 
             handleLibraryOutsideClick(e) {
@@ -2132,9 +2418,10 @@
                     item.appendChild(timestamp);
                     
                     const buttons = document.createElement('div');
+                    buttons.className = 'library-item-buttons';
                     buttons.innerHTML = `
-                        <button onclick="blobDesigner.downloadSnapshot(${snapshot.id})" style="margin: 5px; padding: 5px 10px; background: #4ecdc4; border: none; border-radius: 5px; color: white; cursor: pointer;">Download</button>
-                        <button onclick="blobDesigner.deleteSnapshot(${snapshot.id})" style="margin: 5px; padding: 5px 10px; background: #ff6b6b; border: none; border-radius: 5px; color: white; cursor: pointer;">Delete</button>
+                        <button onclick="blobDesigner.downloadSnapshot(${snapshot.id})">Download</button>
+                        <button class="delete" onclick="blobDesigner.deleteSnapshot(${snapshot.id})">Delete</button>
                     `;
                     item.appendChild(buttons);
                     
