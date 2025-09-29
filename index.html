@@ -66,12 +66,6 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
-        
-        /* Style for the new glow effect button */
-        .glow-effect-btn {
-            background-color: #4ecdc4;
-            box-shadow: 0 0 8px rgba(78, 205, 196, 0.8), 0 0 12px rgba(78, 205, 196, 0.6);
-        }
 
         .color-btn:hover {
             transform: scale(1.1);
@@ -86,12 +80,29 @@
 
         .toolbar {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            left: 10px;
+            right: 10px;
             display: flex;
             gap: 10px;
             z-index: 100;
             align-items: center;
+            overflow-x: auto;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 12px;
+            box-sizing: border-box;
+        }
+        
+        .toolbar::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+
+        .toolbar button, .toolbar select, .toolbar .default-corner-input {
+            flex-shrink: 0;
         }
 
         .toolbar button, .toolbar select {
@@ -130,6 +141,29 @@
             cursor: not-allowed;
         }
 
+        /* Other Settings Dropdown */
+        .settings-dropdown {
+            position: relative;
+        }
+
+        .settings-panel {
+            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 210; /* Increased z-index */
+            width: max-content;
+        }
+
+        .settings-panel.visible {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+
         .glass-controls {
             display: flex;
             gap: 10px;
@@ -145,6 +179,14 @@
             gap: 5px;
             font-size: 13px;
             color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+        }
+        .glass-controls label span {
+            display: inline-block;
+            width: 35px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: #fff;
         }
         .glass-controls input[type="range"] {
             width: 80px;
@@ -153,8 +195,23 @@
             border: none;
             -webkit-appearance: none;
              appearance: none;
-             height: 5px;
-             border-radius: 5px;
+             vertical-align: middle;
+        }
+        .glass-controls input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+        .glass-controls input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
         }
         .glass-controls input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -164,6 +221,7 @@
             border-radius: 50%;
             background: #4ecdc4;
             cursor: pointer;
+            margin-top: -6px; /* Center thumb on track */
         }
         .glass-controls input[type="range"]::-moz-range-thumb {
             width: 15px;
@@ -192,6 +250,7 @@
             font-size: 14px;
             max-width: 300px;
             z-index: 100;
+            transition: opacity 0.5s ease;
         }
 
         .grid-window {
@@ -466,6 +525,7 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .library-color-btn:hover {
@@ -517,21 +577,15 @@
 
 
         @media (max-width: 768px) {
-            .color-palette {
+            .toolbar {
                 top: 10px;
                 left: 10px;
+                right: 10px;
             }
             
             .color-btn {
                 width: 35px;
                 height: 35px;
-            }
-            
-            .toolbar {
-                top: 10px;
-                right: 10px;
-                flex-direction: column;
-                align-items: flex-end;
             }
             
             .toolbar button {
@@ -582,6 +636,7 @@
 
         <!-- The blurred, masked, and color-overlaid copy of the background shapes -->
         <g mask="url(#glassMask)">
+            <rect width="100%" height="100%" fill="black" />
             <use href="#backgroundShapes" filter="url(#glassBlur)" />
             <rect id="overlayRect" width="100%" height="100%" fill="#0000ff" opacity="0.2" style="mix-blend-mode: multiply; pointer-events: none;"/>
         </g>
@@ -592,13 +647,23 @@
 
     <div class="toolbar">
         <button id="exportBtn">Export SVG</button>
+        <div class="default-corner-input">
+            <input type="number" id="defaultCornerInput" min="0" max="400" placeholder="Def Corner Smooth..">
+        </div>
         <button id="snapLibraryBtn" style="display: none;">Snap Library</button>
         <button id="libraryBtn">Shapes Library</button>
         <button id="clearBtn1">Clear Canvas</button>
+        <div class="settings-dropdown">
+            <button id="settingsToggleBtn">Other Settings ▼</button>
+        </div>
+    </div>
+    
+    <!-- Settings Panel is moved out of the toolbar to avoid clipping issues with overflow -->
+    <div class="settings-panel" id="settingsPanel">
         <div class="glass-controls">
-            <label>Blur: <input type="range" id="blurRange" min="0" max="30" value="6" step="1"></label>
+            <label>Blur: <input type="range" id="blurRange" min="0" max="30" value="6" step="1"><span id="blurValue">6</span></label>
             <label>Overlay: <input type="color" id="overlayColor" value="#0000ff"></label>
-            <label>Intensity: <input type="range" id="overlayOpacity" min="0" max="100" value="20"></label>
+            <label>Intensity: <input type="range" id="overlayOpacity" min="0" max="100" value="20"><span id="overlayOpacityValue">20</span></label>
             <select id="blendModeSelect" title="Blend Mode">
                 <option value="multiply">Multiply</option>
                 <option value="screen">Screen</option>
@@ -608,8 +673,9 @@
                 <option value="color-dodge">Color Dodge</option>
             </select>
         </div>
-        <div class="default-corner-input">
-            <input type="number" id="defaultCornerInput" min="0" max="400" placeholder="Def Corner Smooth..">
+        <div class="glass-controls">
+            <label>Magnet Dist: <input type="range" id="distanceRange" min="0" max="300" value="150" step="1"><span id="distanceValue">150</span></label>
+            <label>Magnet Force: <input type="range" id="attractionRange" min="-100" max="150" value="45" step="1"><span id="attractionValue">45</span></label>
         </div>
     </div>
 
@@ -628,10 +694,8 @@
         <h3 style="text-align: center; margin-top: 0; color: white;">Create Shape</h3>
         <div class="grid-color-palette">
             <div class="color-btn active" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
-            <div class="color-btn" style="background-color: rgba(0,0,0,0.2); border: 3px solid white;" data-color="rgba(0,0,0,0.2)" data-stroke="white" data-stroke-width="2"></div>
-            <div class="color-btn glow-effect-btn" data-color="#4ecdc4" data-filter="url(#glow)"></div>
-            <!-- New button for the glass effect -->
-            <div class="color-btn" style="background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4)); border: 2px solid white;" data-effect="glass"></div>
+            <div class="color-btn" style="background-color: #4ecdc4;" data-color="#4ecdc4"></div>
+            <div class="color-btn" style="background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4)); border: 2px solid gray;" data-effect="glass"></div>
             <div class="color-btn" style="background-color: #45b7d1;" data-color="#45b7d1"></div>
             <div class="color-btn" style="background-color: #96ceb4;" data-color="#96ceb4"></div>
             <div class="color-btn" style="background-color: #feca57;" data-color="#feca57"></div>
@@ -639,10 +703,6 @@
         </div>
         <div class="grid-container" id="gridContainer"></div>
         <div class="grid-controls">
-            <label style="color: white; margin-right: 15px;">
-                <input type="checkbox" id="continuousDrawingMode" style="margin-right: 5px;">
-                Continuous Drawing
-            </label>
             <button class="clear-grid-btn" onclick="blobDesigner.clearGrid()">Clear</button>
             <button class="clear-grid-btn" onclick="blobDesigner.closeGridWindow()">Close</button>
         </div>
@@ -683,16 +743,18 @@
                 this.gridPoints = [];
                 this.selectedGridPoints = [];
                 this.defaultCornerSmoothing = 0;
-                this.continuousDrawing = false;
                 this.isSelecting = false;
                 this.selectionStart = null;
                 this.selectedShapes = [];
                 this.selectionBox = null;
+                this.lastProcessedPoint = null;
                 
                 this.currentStroke = undefined;
                 this.currentStrokeWidth = undefined;
                 this.currentFilter = undefined;
                 this.currentEffect = null;
+                this.maxDistance = 150;
+                this.maxAttraction = 45;
 
                 // Glass effect elements
                 this.blurControl = document.getElementById('blurRange');
@@ -701,6 +763,15 @@
                 this.blendModeControl = document.getElementById('blendModeSelect');
                 this.glassGaussianBlur = document.getElementById('glassGaussianBlur');
                 this.overlayRect = document.getElementById('overlayRect');
+
+                // Magnet controls
+                this.distanceControl = document.getElementById('distanceRange');
+                this.attractionControl = document.getElementById('attractionRange');
+
+                // Settings Panel
+                this.settingsPanel = document.getElementById('settingsPanel');
+                this.settingsToggleButton = document.getElementById('settingsToggleBtn');
+                this.boundSettingsOutsideClick = this.handleSettingsOutsideClick.bind(this);
                 
                 this.init();
             }
@@ -709,6 +780,27 @@
                 this.setupEventListeners();
                 this.loadLibrary();
                 this.checkSnapLibrary();
+                setTimeout(() => {
+                    const instructions = document.querySelector('.instructions');
+                    if (instructions) {
+                        instructions.style.opacity = '0';
+                        setTimeout(() => instructions.style.display = 'none', 500);
+                    }
+                }, 7000);
+
+                // Adjust canvas position to be below the toolbar
+                this.adjustCanvasPosition();
+                window.addEventListener('resize', this.adjustCanvasPosition.bind(this));
+            }
+
+            adjustCanvasPosition() {
+                const toolbar = document.querySelector('.toolbar');
+                if (toolbar) {
+                    const toolbarHeight = toolbar.offsetHeight;
+                    this.canvas.style.position = 'absolute';
+                    this.canvas.style.top = `${toolbarHeight}px`;
+                    this.canvas.style.height = `calc(100vh - ${toolbarHeight}px)`;
+                }
             }
 
             setupEventListeners() {
@@ -727,10 +819,13 @@
                 document.getElementById('snapLibraryBtn').addEventListener('click', this.openSnapLibrary.bind(this));
                 document.getElementById('libraryBtn').addEventListener('click', this.openLibrary.bind(this));
                 document.getElementById('clearBtn1').addEventListener('click', this.clearCanvas.bind(this));
+                this.settingsToggleButton.addEventListener('click', this.toggleSettingsPanel.bind(this));
+
 
                 // Glass effect controls
                 this.blurControl.addEventListener('input', (e) => {
                     this.glassGaussianBlur.setAttribute('stdDeviation', e.target.value);
+                    document.getElementById('blurValue').textContent = e.target.value;
                 });
 
                 this.overlayColorControl.addEventListener('input', (e) => {
@@ -739,10 +834,24 @@
 
                 this.overlayOpacityControl.addEventListener('input', (e) => {
                     this.overlayRect.setAttribute('opacity', e.target.value / 100);
+                    document.getElementById('overlayOpacityValue').textContent = e.target.value;
                 });
 
                 this.blendModeControl.addEventListener('input', (e) => {
                     this.overlayRect.style.mixBlendMode = e.target.value;
+                });
+
+                // Magnet controls
+                this.distanceControl.addEventListener('input', (e) => {
+                    this.maxDistance = parseInt(e.target.value, 10);
+                    this.updateMagneticAttraction();
+                    document.getElementById('distanceValue').textContent = e.target.value;
+                });
+
+                this.attractionControl.addEventListener('input', (e) => {
+                    this.maxAttraction = parseInt(e.target.value, 10);
+                    this.updateMagneticAttraction();
+                    document.getElementById('attractionValue').textContent = e.target.value;
                 });
 
 
@@ -760,6 +869,44 @@
 
                 // Prevent context menu
                 this.canvas.addEventListener('contextmenu', e => e.preventDefault());
+            }
+
+            toggleSettingsPanel(e) {
+                e.stopPropagation(); // Prevent this click from being caught by the 'outside' handler
+                
+                const isVisible = this.settingsPanel.classList.toggle('visible');
+
+                if (isVisible) {
+                    // Position the panel relative to the toggle button
+                    const btnRect = this.settingsToggleButton.getBoundingClientRect();
+                    
+                    this.settingsPanel.style.position = 'fixed'; // Use fixed to position relative to viewport
+                    this.settingsPanel.style.top = `${btnRect.bottom + 5}px`;
+                    
+                    // To right-align the panel with the button, we need its width AFTER it becomes visible
+                    const panelRect = this.settingsPanel.getBoundingClientRect();
+                    this.settingsPanel.style.left = `${btnRect.right - panelRect.width}px`;
+
+                    // Add a listener to close the panel when clicking outside
+                    // Use a timeout to ensure this listener is added after the current click event is fully processed
+                    setTimeout(() => {
+                        document.addEventListener('mousedown', this.boundSettingsOutsideClick);
+                    }, 0);
+                } else {
+                    // If the panel was just hidden, remove the outside click listener
+                    document.removeEventListener('mousedown', this.boundSettingsOutsideClick);
+                }
+            }
+
+
+            handleSettingsOutsideClick(e) {
+                if (this.settingsPanel.classList.contains('visible') &&
+                    !this.settingsPanel.contains(e.target) &&
+                    !this.settingsToggleButton.contains(e.target)) {
+                    
+                    this.settingsPanel.classList.remove('visible');
+                    document.removeEventListener('mousedown', this.boundSettingsOutsideClick);
+                }
             }
 
             getEventPos(e) {
@@ -939,7 +1086,7 @@
                         if (btn.dataset.effect === 'glass') {
                             this.currentEffect = 'glass';
                             this.currentColor = 'rgba(255,255,255,0.22)';
-                            this.currentStroke = 'rgba(255,255,255,0.85)';
+                            this.currentStroke = 'rgba(128,128,128,0.85)';
                             this.currentStrokeWidth = '2';
                         } else {
                             this.currentColor = btn.dataset.color;
@@ -948,11 +1095,6 @@
                             this.currentFilter = btn.dataset.filter;
                         }
                     });
-                });
-                
-                const continuousCheckbox = document.getElementById('continuousDrawingMode');
-                continuousCheckbox.addEventListener('change', (e) => {
-                    this.continuousDrawing = e.target.checked;
                 });
                 
                 gridContainer.innerHTML = '';
@@ -965,72 +1107,77 @@
                         point.className = 'grid-point';
                         point.dataset.row = row;
                         point.dataset.col = col;
-                        
-                        point.addEventListener('touchmove', (e) => {
-                            if (this.continuousDrawing && this.isDragging) {
-                                e.preventDefault();
-                                const touch = e.touches[0];
-                                const element = document.elementFromPoint(touch.clientX, touch.clientY);
-                                if (element && element.classList.contains('grid-point')) {
-                                    const touchRow = parseInt(element.dataset.row);
-                                    const touchCol = parseInt(element.dataset.col);
-                                    this.toggleGridPoint(touchRow, touchCol, element);
-                                }
-                            }
-                        });
-                        
-                        point.addEventListener('click', () => {
-                            if (!this.continuousDrawing) {
-                                this.toggleGridPoint(row, col, point);
-                            }
-                        });
-                        
-                        point.addEventListener('mousedown', () => {
-                            if (this.continuousDrawing) {
-                                this.isDragging = true;
-                                this.toggleGridPoint(row, col, point);
-                            }
-                        });
-                        
-                        point.addEventListener('mouseenter', () => {
-                            if (this.continuousDrawing && this.isDragging) {
-                                this.toggleGridPoint(row, col, point);
-                            }
-                        });
+
+                        const handleInteractionStart = (e) => {
+                            e.preventDefault();
+                            this.isDragging = true;
+                            this.handleGridPointInteraction(point, false);
+
+                            this.boundGridMove = this.handleGlobalGridMove.bind(this);
+                            this.boundGridEnd = this.handleGlobalGridEnd.bind(this);
+                            
+                            document.addEventListener('mousemove', this.boundGridMove);
+                            document.addEventListener('touchmove', this.boundGridMove, { passive: false });
+                            document.addEventListener('mouseup', this.boundGridEnd);
+                            document.addEventListener('touchend', this.boundGridEnd);
+                        };
+                        point.addEventListener('mousedown', handleInteractionStart);
+                        point.addEventListener('touchstart', handleInteractionStart);
                         
                         gridContainer.appendChild(point);
                         this.gridPoints.push({ row, col, element: point });
                     }
                 }
-                
-                gridContainer.addEventListener('mouseup', () => {
-                    this.isDragging = false;
-                });
-                
-                gridContainer.addEventListener('mouseleave', () => {
-                    this.isDragging = false;
-                });
-                
                 gridWindow.style.display = 'block';
             }
+            
+            handleGlobalGridMove(e) {
+                if (!this.isDragging) return;
+                e.preventDefault();
 
-            toggleGridPoint(row, col, element) {
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                const element = document.elementFromPoint(clientX, clientY);
+                if (element && element.classList.contains('grid-point')) {
+                    this.handleGridPointInteraction(element, true);
+                }
+            }
+
+            handleGlobalGridEnd(e) {
+                if (!this.isDragging) return;
+                this.isDragging = false;
+                this.lastProcessedPoint = null;
+
+                document.removeEventListener('mousemove', this.boundGridMove);
+                document.removeEventListener('touchmove', this.boundGridMove);
+                document.removeEventListener('mouseup', this.boundGridEnd);
+                document.removeEventListener('touchend', this.boundGridEnd);
+            }
+
+            handleGridPointInteraction(element, isMove = false) {
+                const row = parseInt(element.dataset.row);
+                const col = parseInt(element.dataset.col);
+
+                if (isMove && this.lastProcessedPoint === element) return;
+                this.lastProcessedPoint = element;
+
                 if (this.selectedGridPoints.length >= 3 && 
                     this.selectedGridPoints[0].row === row && 
                     this.selectedGridPoints[0].col === col) {
                     this.createShapeFromGrid();
                     return;
                 }
-                
+
                 const pointIndex = this.selectedGridPoints.findIndex(p => p.row === row && p.col === col);
-                
-                if (this.continuousDrawing) {
-                    if (pointIndex < 0) {
+
+                if (isMove) {
+                    if (pointIndex === -1) {
                         this.selectedGridPoints.push({ row, col });
                         element.classList.add('active');
                     }
                 } else {
-                    if (pointIndex >= 0) {
+                    if (pointIndex > -1) {
                         this.selectedGridPoints.splice(pointIndex, 1);
                         element.classList.remove('active');
                     } else {
@@ -1038,7 +1185,7 @@
                         element.classList.add('active');
                     }
                 }
-                
+
                 this.updateGridConnections();
                 this.updatePreviewOutline();
             }
@@ -1402,8 +1549,8 @@
             }
 
             updateMagneticAttraction() {
-                const maxDistance = 150;
-                const maxAttraction = 45;
+                const maxDistance = this.maxDistance;
+                const maxAttraction = this.maxAttraction;
                 const smoothingFactor = 0.15;
 
                 this.shapes.forEach(shape => {
@@ -1593,118 +1740,68 @@
             }
 
             exportSVG() {
+                // 1. Clone the main SVG element to avoid modifying the live canvas
+                const exportSVG = this.canvas.cloneNode(true);
+
+                // 2. Clean up UI-only elements that shouldn't be in the final file
+                exportSVG.querySelectorAll('.selection-box, .preview-path').forEach(el => el.remove());
+                exportSVG.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                exportSVG.style.position = '';
+                exportSVG.style.top = '';
+                exportSVG.style.height = '';
+
+
+                // 3. Get the exact dimensions of the on-screen SVG
                 const bounds = this.canvas.getBoundingClientRect();
                 const width = bounds.width;
                 const height = bounds.height;
 
-                // 1. Create the root SVG element
-                const exportSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                // 4. Configure the exported SVG attributes for a perfect 1:1 capture
                 exportSVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
                 exportSVG.setAttribute('width', width);
                 exportSVG.setAttribute('height', height);
+                // Set the viewBox to match the full on-screen canvas area. This ensures
+                // that all content, including filter effects that extend beyond the
+                // shapes' geometric boundaries (like blurs and glows), is fully captured.
                 exportSVG.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
-                // 2. Create and populate the <defs> block
-                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                
-                // Copy filters
-                this.canvas.querySelectorAll('defs > filter').forEach(filter => {
-                    defs.appendChild(filter.cloneNode(true));
-                });
-                
-                // Create background gradient
+                // 5. Recreate the background gradient from the body's CSS inside the SVG
+                // This ensures the exported file has the same background as the editor.
+                const defs = exportSVG.querySelector('defs') || document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                if (!exportSVG.contains(defs)) {
+                    exportSVG.prepend(defs); // Ensure defs is at the top
+                }
+
                 const radialGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
                 radialGradient.id = 'exported-bg-gradient';
-                radialGradient.innerHTML = `<stop offset="0%" stop-color="#2a2a2a" /><stop offset="100%" stop-color="#1a1a1a" />`;
+                radialGradient.innerHTML = `
+                    <stop offset="0%" stop-color="#2a2a2a" />
+                    <stop offset="100%" stop-color="#1a1a1a" />
+                `;
                 defs.appendChild(radialGradient);
 
-                // 3. Create a main group for all visual elements, similar to the example
-                const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                mainGroup.id = 'blob-design-group';
-
-                // 4. Create and add the background rectangle
                 const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 backgroundRect.setAttribute('width', '100%');
                 backgroundRect.setAttribute('height', '100%');
                 backgroundRect.setAttribute('fill', 'url(#exported-bg-gradient)');
-                mainGroup.appendChild(backgroundRect);
 
-                // 5. Get shape data
-                const liveBackgroundShapes = this.backgroundShapesContainer.querySelectorAll('path');
-                const liveGlassShapes = this.glassShapesContainer.querySelectorAll('path');
-
-                // 6. Add non-glass background shapes
-                const backgroundShapesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                backgroundShapesGroup.id = 'backgroundShapes';
-                liveBackgroundShapes.forEach(shape => {
-                    const clone = shape.cloneNode(true);
-                    clone.classList.remove('blob-shape', 'selected'); // Clean UI classes
-                    backgroundShapesGroup.appendChild(clone);
-                });
-                mainGroup.appendChild(backgroundShapesGroup);
-                
-                // 7. Reconstruct the glass effect if there are glass shapes
-                if (liveGlassShapes.length > 0) {
-                    // Create mask definition for the glass shapes
-                    const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
-                    const maskId = 'exported-glass-mask';
-                    mask.id = maskId;
-                    liveGlassShapes.forEach(shape => {
-                        const maskPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        maskPath.setAttribute('d', shape.getAttribute('d'));
-                        maskPath.setAttribute('fill', 'white');
-                        mask.appendChild(maskPath);
-                    });
-                    defs.appendChild(mask);
-
-                    // Create the group that will be masked
-                    const maskedContentGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                    maskedContentGroup.setAttribute('mask', `url(#${maskId})`);
-                    
-                    // Inside it, create a copy of the background shapes and apply the blur filter.
-                    // This is the key change: replacing <use> with a full copy.
-                    const blurredBackgroundCopy = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                    const blurFilterId = this.glassGaussianBlur.parentElement.id;
-                    blurredBackgroundCopy.setAttribute('filter', `url(#${blurFilterId})`);
-                    
-                    liveBackgroundShapes.forEach(shape => {
-                         const clone = shape.cloneNode(true);
-                         clone.classList.remove('blob-shape', 'selected');
-                         blurredBackgroundCopy.appendChild(clone);
-                    });
-                    maskedContentGroup.appendChild(blurredBackgroundCopy);
-                    
-                    // Add the overlay rectangle
-                    const overlayRectClone = this.overlayRect.cloneNode(true);
-                    overlayRectClone.removeAttribute('id');
-                    maskedContentGroup.appendChild(overlayRectClone);
-
-                    mainGroup.appendChild(maskedContentGroup);
+                // Insert the background rect right after the <defs> block to draw it first
+                if (defs.nextSibling) {
+                    defs.parentNode.insertBefore(backgroundRect, defs.nextSibling);
+                } else {
+                    defs.parentNode.appendChild(backgroundRect);
                 }
 
-                // 8. Add the visible glass shapes on top
-                const glassShapesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                glassShapesGroup.id = 'glassShapes';
-                liveGlassShapes.forEach(shape => {
-                    const clone = shape.cloneNode(true);
-                    clone.classList.remove('blob-shape', 'selected'); // Clean UI classes
-                    glassShapesGroup.appendChild(clone);
-                });
-                mainGroup.appendChild(glassShapesGroup);
-                
-                // 9. Assemble the final SVG and serialize
-                exportSVG.appendChild(defs);
-                exportSVG.appendChild(mainGroup);
-                
+                // 6. Serialize the complete SVG structure to a string
                 const svgString = new XMLSerializer().serializeToString(exportSVG);
                 const blob = new Blob([svgString], { type: 'image/svg+xml' });
                 const url = URL.createObjectURL(blob);
 
-                // 10. Trigger download
+                // 7. Trigger the download
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'blob-design.svg';
-                document.body.appendChild(a);
+                document.body.appendChild(a); // Appending to body is required for Firefox
                 a.click();
                 document.body.removeChild(a);
 
@@ -1741,10 +1838,21 @@
             openLibrary() {
                 const modal = document.getElementById('libraryModal');
                 const grid = document.getElementById('libraryGrid');
-                const library = this.loadLibrary();
+                const library = this.loadLibrary().filter(Boolean);
                 
                 grid.innerHTML = '';
                 
+                const paletteData = [
+                    { color: '#ff6b6b', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { color: '#4ecdc4', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { effect: 'glass', color: 'rgba(255,255,255,0.22)', stroke: 'rgba(128,128,128,0.85)', strokeWidth: '2', filter: null },
+                    { color: '#45b7d1', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { color: '#96ceb4', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { color: '#feca57', stroke: null, strokeWidth: null, filter: null, effect: null },
+                    { color: '#ff9ff3', stroke: null, strokeWidth: null, filter: null, effect: null },
+                ];
+
+
                 library.forEach(shape => {
                     const item = document.createElement('div');
                     item.className = 'library-item';
@@ -1789,20 +1897,29 @@
                     
                     const colorPalette = document.createElement('div');
                     colorPalette.className = 'library-item-colors';
-                    const colors = ['#ff6b6b', 'rgba(0,0,0,0.2)', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
-                    colors.forEach(color => {
+
+                    paletteData.forEach(data => {
                         const colorBtn = document.createElement('div');
                         colorBtn.className = 'library-color-btn';
-                        colorBtn.style.backgroundColor = color;
-                        if (color === shape.color) {
+                        
+                        if (data.effect === 'glass') {
+                            colorBtn.style.background = 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4))';
+                            colorBtn.style.border = '2px solid gray';
+                        } else {
+                            colorBtn.style.backgroundColor = data.color;
+                        }
+
+                        if (shape.color === data.color && shape.effect === data.effect) {
                             colorBtn.classList.add('active');
                         }
+                        
                         colorBtn.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            this.changeShapeColor(shape, color, path, colorPalette);
+                            this.changeShapeStyle(shape, data, item);
                         });
                         colorPalette.appendChild(colorBtn);
                     });
+
                     item.appendChild(colorPalette);
                     
                     const buttons = document.createElement('div');
@@ -1883,29 +2000,55 @@
                     closeLibrary();
                 }
             }
+            
+            changeShapeStyle(shape, styleData, libraryItemElement) {
+                // To prevent any possible side effects on shapes rendered on the canvas,
+                // we will not mutate the `shape` object directly for persistence.
+                // Instead, we create a new object that merges the old properties with the new style.
+                const updatedShapeData = { ...shape, ...styleData };
 
-            changeShapeColor(shape, newColor, pathElement, colorPalette) {
-                shape.color = newColor;
-                pathElement.setAttribute('fill', newColor);
+                // Update the visual representation in the library modal for immediate feedback.
+                const pathElement = libraryItemElement.querySelector('path');
+                pathElement.setAttribute('fill', updatedShapeData.color);
+
+                if (updatedShapeData.stroke) {
+                    pathElement.setAttribute('stroke', updatedShapeData.stroke);
+                    pathElement.setAttribute('stroke-width', updatedShapeData.strokeWidth);
+                } else {
+                    pathElement.removeAttribute('stroke');
+                    pathElement.removeAttribute('stroke-width');
+                }
                 
-                colorPalette.querySelectorAll('.library-color-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
+                if (updatedShapeData.filter) {
+                    pathElement.setAttribute('filter', updatedShapeData.filter);
+                } else {
+                    pathElement.removeAttribute('filter');
+                }
+
+                // Update the active state of color buttons within the library item.
+                const colorPalette = libraryItemElement.querySelector('.library-item-colors');
+                colorPalette.querySelectorAll('.library-color-btn').forEach(btn => btn.classList.remove('active'));
                 
-                const buttons = colorPalette.querySelectorAll('.library-color-btn');
+                const buttons = Array.from(colorPalette.querySelectorAll('.library-color-btn'));
                 buttons.forEach(btn => {
-                    if (btn.style.backgroundColor === newColor) {
+                    const isGlassBtn = btn.style.background.includes('linear-gradient');
+                    if (styleData.effect === 'glass' && isGlassBtn) {
                         btn.classList.add('active');
+                    } else if (styleData.color && btn.style.backgroundColor === styleData.color) {
+                         btn.classList.add('active');
                     }
                 });
                 
-                const library = this.loadLibrary();
-                const libraryShape = library.find(s => s.id === shape.id);
-                if (libraryShape) {
-                    libraryShape.color = newColor;
-                    localStorage.setItem('blobLibrary', JSON.stringify(library));
-                }
+                // Persist the newly created shape data object to localStorage.
+                // `saveShapeToLibrary` will handle finding and replacing the existing entry.
+                this.saveShapeToLibrary(updatedShapeData);
+
+                // Also, update the in-memory `shape` object that the library modal is using.
+                // This ensures that if the user clicks another color on the same item,
+                // the correct state is used as the base.
+                Object.assign(shape, updatedShapeData);
             }
+
 
             addShapeToCanvas(libraryShape) {
                 const targetX = 100;
